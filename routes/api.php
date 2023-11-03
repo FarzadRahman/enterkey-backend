@@ -22,4 +22,5 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::post('/register',[AuthController::class,'register']);
     Route::post('/login',[AuthController::class,'login']);
     Route::post('/dashboard',[AuthController::class,'dashboard']);
+    Route::post('/logout',[AuthController::class,'logout']);
 });
