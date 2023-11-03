@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\ApiBranchController;
 use App\Http\Controllers\Api\ApiCompanyController;
 use App\Http\Controllers\Api\ApiDepartmentController;
 use App\Http\Controllers\Api\ApiDesignationController;
+use App\Http\Controllers\Api\ApiEmployeeController;
 use App\Http\Controllers\Api\ApiGradeController;
 use App\Http\Controllers\Api\ApiLeaveStatusController;
 use App\Http\Controllers\Api\ApiLeaveTypeController;
@@ -30,10 +31,13 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::post('/register',[AuthController::class,'register']);
     Route::post('/login',[AuthController::class,'login']);
     Route::post('/dashboard',[AuthController::class,'dashboard']);
+    Route::post('/employees',[ApiEmployeeController::class,'store']);
+
     Route::post('/company',[ApiCompanyController::class,'store']);
     Route::post('/department',[ApiDepartmentController::class,'store']);
     Route::post('/grade',[ApiGradeController::class,'store']);
     Route::post('/designation',[ApiDesignationController::class,'store']);
+
     Route::post('/leave-status',[ApiLeaveStatusController::class,'store']);
     Route::post('/leave-type',[ApiLeaveTypeController::class,'store']);
     Route::post('/role',[ApiRoleController::class,'store']);
