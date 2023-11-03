@@ -37,6 +37,8 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::post('/employees',[ApiEmployeeController::class,'store']);
 
     Route::post('/company',[ApiCompanyController::class,'store']);
+    Route::get('/companies',[ApiCompanyController::class,'getAll']);
+
     Route::post('/department',[ApiDepartmentController::class,'store']);
     Route::post('/grade',[ApiGradeController::class,'store']);
     Route::post('/designation',[ApiDesignationController::class,'store']);
