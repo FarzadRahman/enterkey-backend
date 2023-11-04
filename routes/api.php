@@ -31,9 +31,13 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::post('/register',[AuthController::class,'register']);
     Route::post('/login',[AuthController::class,'login']);
     Route::post('/dashboard',[AuthController::class,'dashboard']);
-    Route::post('/employees',[ApiEmployeeController::class,'store']);
+    Route::post('/employees/create',[ApiEmployeeController::class,'store']);
 
-    Route::post('/company',[ApiCompanyController::class,'store']);
+    Route::post('/company/create',[ApiCompanyController::class,'store']);
+    Route::post('/company/update/{id}',[ApiCompanyController::class,'update']);
+    Route::post('/company/{id}',[ApiCompanyController::class,'destroy']);
+
+
     Route::post('/department',[ApiDepartmentController::class,'store']);
     Route::post('/grade',[ApiGradeController::class,'store']);
     Route::post('/designation',[ApiDesignationController::class,'store']);
