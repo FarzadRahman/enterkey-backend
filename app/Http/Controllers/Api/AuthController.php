@@ -45,6 +45,13 @@ class AuthController extends Controller
     //     }
     //     return $this->respondWithToken($token);
     // }
+
+    public function logout(){
+        auth()->logout();
+
+// Pass true to force the token to be blacklisted "forever"
+//        auth()->logout(true);
+    }
     public function login(Request $request)
     {
 
