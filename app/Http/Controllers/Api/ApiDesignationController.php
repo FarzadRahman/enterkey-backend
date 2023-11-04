@@ -26,4 +26,14 @@ class ApiDesignationController extends Controller
 
         return response()->json(['message' => 'Designation created successfully', 'data' => $designation], 201);
     }
+    public function update(Request $request,$id)
+    {
+
+    }
+    public function destroy($id){
+
+    }
+    public function getAll(){
+
+    }
 }

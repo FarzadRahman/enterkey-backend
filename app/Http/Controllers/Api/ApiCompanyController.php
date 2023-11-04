@@ -37,6 +37,41 @@ class ApiCompanyController extends Controller
 
         return response()->json(['message' => 'Company created successfully', 'data' => $company], 201);
     }
+    public function update(Request $request, $id)
+    {
+        $validator = Validator::make($request->all(), [
+            'company_name' => 'required|string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        $data = $validator->validated(); // Retrieve the validated data
+
+        $company = Company::find($id);
+
+        if (!$company) {
+            return response()->json(['message' => 'Company not found'], 404);
+        }
+
+        $company->update($data);
+
+        return response()->json(['message' => 'Company updated successfully', 'data' => $company], 200);
+    }
+    public function destroy($id)
+    {
+        $company = Company::find($id);
+
+        if (!$company) {
+            return response()->json(['message' => 'Company not found'], 404);
+        }
+
+        $company->delete();
+
+        return response()->json(['message' => 'Company deleted successfully'], 200);
+    }
+
 
     public function getAll(){
         $companies=Company::get();

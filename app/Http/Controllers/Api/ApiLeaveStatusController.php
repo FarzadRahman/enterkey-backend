@@ -25,5 +25,36 @@ class ApiLeaveStatusController extends Controller
 
         return response()->json(['message' => 'Leave Status created successfully', 'data' => $leaveStatus], 201);
     }
+    public function update(Request $request,$id)
+    {
+        $validator = Validator::make($request->all(), [
+            'leave_status_name' => 'string|max:255',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        $data = $validator->validated(); // Retrieve the validated data
+        $leaveStatus=LeaveStatus::find($id);
+        if(!$leaveStatus){
+            return response()->json(['message'=>'Leave Status not found'],404);
+        }
+        $leaveStatus = $leaveStatus->update($data);
+
+        return response()->json(['message' => 'Leave Status Updated successfully', 'data' => $leaveStatus], 201);
+    }
+    public function destroy($id){
+        $leaveStatus=LeaveStatus::find($id);
+        if(!$leaveStatus){
+            return response()->json(['message'=>'Leave Status is not found'],404);
+        }
+        $leaveStatus->delete();
+        return response()->json(['message'=>'Leave Status deleted Successfully'],200);
+    }
+    public function getAll(){
+        $leaveStatus=LeaveStatus::get();
+        return $leaveStatus;
+    }
 
 }
