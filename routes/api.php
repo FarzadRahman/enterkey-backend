@@ -76,7 +76,7 @@ Route::group(['middleware'=>'api'],function($routes){
 
     Route::post('/leave-type/create',[ApiLeaveTypeController::class,'store']);
     Route::post('/leave-type/update/{id}',[ApiLeaveTypeController::class,'update']);
-    Route::post('/leave-type/{id]',[ApiLeaveTypeController::class,'destroy']);
+    Route::post('/leave-type/{id}',[ApiLeaveTypeController::class,'destroy']);
     Route::get('/leave-type',[ApiLeaveTypeController::class,'getAll']);
 
     Route::post('/role/create',[ApiRoleController::class,'store']);
