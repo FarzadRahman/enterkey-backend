@@ -44,7 +44,8 @@ Route::group(['middleware'=>'api'],function($routes){
 //    Route::post('/company',[ApiCompanyController::class,'store']);
     Route::post('/company/create',[ApiCompanyController::class,'store']);
     Route::post('/company/update/{id}',[ApiCompanyController::class,'update']);
-    Route::post('/company/{id}',[ApiCompanyController::class,'destroy']);
+    Route::post('/company/delete/{id}',[ApiCompanyController::class,'destroy']);
+    Route::get('/company/{id}',[ApiCompanyController::class,'edit']);
     Route::get('/companies',[ApiCompanyController::class,'getAll']);
 
     Route::post('/branch/create',[ApiBranchController::class,'store']);

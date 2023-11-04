@@ -8,12 +8,17 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Company;
 class ApiCompanyController extends Controller
 {
+
+    public function edit($id){
+        $company = Company::findOrFail($id);
+        return response()->json(['data' => $company], 200);
+    }
     public function store(Request $request)
     {
 
 
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
+            'company_name' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -26,7 +31,7 @@ class ApiCompanyController extends Controller
 //        $company = Company::create($data);
 
         $company=new Company();
-        $company->company_name=$request->name;
+        $company->company_name=$request->company_name;
         $company->contact_address=$request->contact_address;
         $company->contact_number=$request->contact_number;
         $company->contact_person=$request->contact_person;
@@ -55,7 +60,16 @@ class ApiCompanyController extends Controller
             return response()->json(['message' => 'Company not found'], 404);
         }
 
-        $company->update($data);
+        $company->company_name=$request->company_name;
+        $company->contact_address=$request->contact_address;
+        $company->contact_number=$request->contact_number;
+        $company->contact_person=$request->contact_person;
+        $company->contact_email=$request->contact_email;
+        $company->company_bin=$request->company_bin;
+        $company->company_tin=$request->company_tin;
+        $company->save();
+
+//        $company->update($data);
 
         return response()->json(['message' => 'Company updated successfully', 'data' => $company], 200);
     }
