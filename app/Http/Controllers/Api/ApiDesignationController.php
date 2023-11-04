@@ -28,12 +28,35 @@ class ApiDesignationController extends Controller
     }
     public function update(Request $request,$id)
     {
+        $validator = Validator::make($request->all(), [
+            'desg_nm' => 'string|max:255',
+            'grade_id' => 'integer',
+        ]);
 
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        $data = $validator->validated(); // Retrieve the validated data
+        $designation=Designation::find($id);
+        if(!$designation){
+            return response()->json(['message'=>'Designation not found'],404);
+
+        }
+        $designation= $designation->update($data);
+
+        return response()->json(['message' => 'Designation updated successfully', 'data' => $designation], 201);
     }
     public function destroy($id){
-
+        $designation=Designation::find($id);
+        if (!$designation){
+            return response()->json(['message'=>'Designation not found'],404);
+        }
+        $designation->delete();
+        return response()->json(['message'=>'Designation deleted successfully'],200);
     }
     public function getAll(){
-
+        $designation=Designation::find($id);
+        return $designation;
     }
 }

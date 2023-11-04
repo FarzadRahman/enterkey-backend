@@ -19,6 +19,13 @@ class ApiCompanyController extends Controller
 
         $validator = Validator::make($request->all(), [
             'company_name' => 'required|string|max:255',
+            'contact_address'=>'required|string',
+            'contact_number'=>'required|string',
+            'contact_person'=>'required|string',
+            'contact_email'=>'required|string',
+            'company_bin'=>'required',
+            'company_tin'=>'required'
+
         ]);
 
         if ($validator->fails()) {
@@ -46,6 +53,12 @@ class ApiCompanyController extends Controller
     {
         $validator = Validator::make($request->all(), [
             'company_name' => 'required|string|max:255',
+            'contact_address'=>'required|string',
+            'contact_number'=>'required|string',
+            'contact_person'=>'required|string',
+            'contact_email'=>'required|string',
+            'company_bin'=>'required',
+            'company_tin'=>'required'
         ]);
 
         if ($validator->fails()) {
@@ -59,8 +72,7 @@ class ApiCompanyController extends Controller
         if (!$company) {
             return response()->json(['message' => 'Company not found'], 404);
         }
-
-        $company->company_name=$request->company_name;
+        $company->company_name=$request->name;
         $company->contact_address=$request->contact_address;
         $company->contact_number=$request->contact_number;
         $company->contact_person=$request->contact_person;
@@ -69,7 +81,8 @@ class ApiCompanyController extends Controller
         $company->company_tin=$request->company_tin;
         $company->save();
 
-//        $company->update($data);
+
+
 
         return response()->json(['message' => 'Company updated successfully', 'data' => $company], 200);
     }
