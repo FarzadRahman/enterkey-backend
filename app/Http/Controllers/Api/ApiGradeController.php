@@ -21,9 +21,9 @@ class ApiGradeController extends Controller
 
         $data = $validator->validated(); // Retrieve the validated data
 //        return $data;
-        $grade = Grade::create($data);
-
-
+        $grade = new Grade();
+        $grade->grade_name=$request->grade_name;
+        $grade->save();
 
         return response()->json(['message' => 'Grade created successfully', 'data' => $grade], 200);
     }
@@ -31,7 +31,7 @@ class ApiGradeController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'grade_name' => 'string|max:255',
+            'grade_name' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -44,9 +44,8 @@ class ApiGradeController extends Controller
         if (!$grade){
             return response()->json(['message'=>'Grade is not found'],404);
         }
-        $grade = $grade->update($data);
-
-
+        $grade->grade_name=$request->grade_name;
+        $grade->save();
 
         return response()->json(['message' => 'Grade Updated successfully', 'data' => $grade], 200);
     }

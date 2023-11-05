@@ -4,7 +4,9 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Employee;
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 
 class ApiEmployeeController extends Controller
@@ -18,10 +20,11 @@ class ApiEmployeeController extends Controller
             'email_address' => 'required|email|max:255',
             'office_id' => 'required',
             'branch_id' => 'required|integer',
-            'user_id' => 'required|integer',
+//            'user_id' => 'required|integer',
             'designation_id' => 'required|integer',
             'department_id' => 'required|integer',
             'signature' => 'nullable|string',
+            'password'=>'required'
         ]);
 
         if ($validator->fails()) {
@@ -29,10 +32,27 @@ class ApiEmployeeController extends Controller
         }
 
         $data = $validator->validated();
+        $user=new User();
+        $user->name=$request->full_name;
+        $user->email=$request->email_address;
+        $user->password=Hash::make($request->password);
+        $user->save();
 
-        $employee = Employee::create($data);
+        $employee=new Employee();
+        $employee->full_name = $request->full_name;
+        $employee->gender = $request->gender;
+        $employee->phone_number = $request->phone_number;
+        $employee->email_address = $request->email_address;
+        $employee->office_id = $request->office_id;
+        $employee->branch_id = $request->branch_id;
+        $employee->user_id = $user->id;
+        $employee->designation_id = $request->designation_id;
+        $employee->department_id = $request->department_id;
+        $employee->signature = $request->signature;
 
-        return response()->json(['message' => 'Employee created successfully', 'data' => $employee], 201);
+        $employee->save();
+
+        return response()->json(['message' => 'Employee created successfully', 'data' => $employee,'user'=>$user], 201);
     }
     public function update(Request $request, $id)
     {
@@ -42,7 +62,7 @@ class ApiEmployeeController extends Controller
             'phone_number' => 'string|max:20',
             'email_address' => 'email|max:255',
             'office_id' => 'string',
-            'branch_id' => 'integer',
+            'branch_id' => 'required|integer',
             'user_id' => 'integer',
             'designation_id' => 'integer',
             'department_id' => 'integer',
@@ -61,9 +81,20 @@ class ApiEmployeeController extends Controller
             return response()->json(['message' => 'Employee not found'], 404);
         }
 
-        $updatedEmployee=$employee->update($data);
+        $employee->full_name = $request->full_name;
+        $employee->gender = $request->gender;
+        $employee->phone_number = $request->phone_number;
+        $employee->email_address = $request->email_address;
+        $employee->office_id = $request->office_id;
+        $employee->branch_id = $request->branch_id;
+        $employee->user_id = $request->user_id;
+        $employee->designation_id = $request->designation_id;
+        $employee->department_id = $request->department_id;
+        $employee->signature = $request->signature;
 
-        return response()->json(['message' => 'Employee updated successfully', 'data' => $updatedEmployee], 200);
+        $employee->save();
+
+        return response()->json(['message' => 'Employee updated successfully', 'data' => $employee], 200);
     }
     public function destroy($id)
     {
@@ -75,10 +106,26 @@ class ApiEmployeeController extends Controller
 
         $employee->delete();
 
-        return response()->json(['message' => 'Employee deleted successfully'], 204);
+        return response()->json(['message' => 'Employee deleted successfully'], 200);
     }
     public function getAll(){
         $employee=Employee::get();
         return $employee;
+    }
+    public function resetPassword(Request $request){
+        $validator=Validator::make($request->all(),[
+            'password'=>'required|string',
+        ]);
+        if($validator->fails()){
+            return response()->json($validator->errors(),400);
+        }
+        $user=User::find($request->id);
+        if (!$user){
+            return response()->json(['message'=>'No user found'],404);
+        }
+        $user->password=Hash::make($request->password);
+        $user->save();
+
+        return response()->json(['message'=>'Password reset successfully'],200);
     }
 }

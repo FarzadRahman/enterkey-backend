@@ -21,14 +21,16 @@ class ApiLeaveStatusController extends Controller
 
         $data = $validator->validated(); // Retrieve the validated data
 
-        $leaveStatus = LeaveStatus::create($data);
+        $leaveStatus = new LeaveStatus();
+        $leaveStatus->leave_status_name=$request->leave_status_name;
+        $leaveStatus->save();
 
         return response()->json(['message' => 'Leave Status created successfully', 'data' => $leaveStatus], 201);
     }
     public function update(Request $request,$id)
     {
         $validator = Validator::make($request->all(), [
-            'leave_status_name' => 'string|max:255',
+            'leave_status_name' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -40,7 +42,9 @@ class ApiLeaveStatusController extends Controller
         if(!$leaveStatus){
             return response()->json(['message'=>'Leave Status not found'],404);
         }
-        $leaveStatus = $leaveStatus->update($data);
+
+        $leaveStatus->leave_status_name=$request->leave_status_name;
+        $leaveStatus->save();
 
         return response()->json(['message' => 'Leave Status Updated successfully', 'data' => $leaveStatus], 201);
     }

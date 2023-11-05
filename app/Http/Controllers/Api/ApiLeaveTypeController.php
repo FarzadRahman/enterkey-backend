@@ -21,14 +21,15 @@ class ApiLeaveTypeController extends Controller
 
         $data = $validator->validated(); // Retrieve the validated data
 
-        $leaveType = LeaveType::create($data);
-
+        $leaveType =new LeaveType();
+        $leaveType->leave_type_name=$request->leave_type_name;
+        $leaveType->save();
         return response()->json(['message' => 'Leave Type created successfully', 'data' => $leaveType], 201);
     }
     public function update(Request $request,$id)
     {
         $validator = Validator::make($request->all(), [
-            'leave_type_name' => 'string|max:255',
+            'leave_type_name' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -41,7 +42,8 @@ class ApiLeaveTypeController extends Controller
             return response()->json(['message'=>'Leave Type not found'],404);
         }
 
-        $leaveType =$leaveType->update($data);
+        $leaveType->leave_type_name=$request->leave_type_name;
+        $leaveType->save();
 
         return response()->json(['message' => 'Leave Type updated successfully', 'data' => $leaveType], 201);
     }

@@ -22,14 +22,18 @@ class ApiBranchController extends Controller
 
         $data = $validator->validated(); // Retrieve the validated data
 
-        $branch = Branch::create($data);
+        $branch = new Branch();
+        $branch->branch_name=$request->branch_name;
+        $branch->company_id=$request->company_id;
+
+        $branch->save();
 
         return response()->json(['message' => 'Branch created successfully', 'data' => $branch], 201);
     }
     public function update(Request $request,$id){
         $validator = Validator::make($request->all(), [
-            'branch_name' => 'string|max:255',
-            'company_id' => 'integer',
+            'branch_name' => 'required|string|max:255',
+            'company_id' => 'required|integer',
         ]);
 
         if ($validator->fails()) {
@@ -41,7 +45,10 @@ class ApiBranchController extends Controller
         if (!$branch) {
             return response()->json(['message' => 'Branch not found'], 404);
         }
-        $branch= $branch->update($data);
+        $branch->branch_name=$request->branch_name;
+        $branch->company_id=$request->company_id;
+
+        $branch->save();
 
         return response()->json(['message' => 'Branch Updated successfully', 'data' => $branch], 201);
     }

@@ -22,15 +22,18 @@ class ApiDesignationController extends Controller
 
         $data = $validator->validated(); // Retrieve the validated data
 
-        $designation= Designation::create($data);
+        $designation= new Designation();
+        $designation->desg_nm=$request->desg_nm;
+        $designation->grade_id=$request->grade_id;
+        $designation->save();
 
         return response()->json(['message' => 'Designation created successfully', 'data' => $designation], 201);
     }
     public function update(Request $request,$id)
     {
         $validator = Validator::make($request->all(), [
-            'desg_nm' => 'string|max:255',
-            'grade_id' => 'integer',
+            'desg_nm' => 'required|string|max:255',
+            'grade_id' => 'required|integer',
         ]);
 
         if ($validator->fails()) {
@@ -43,7 +46,9 @@ class ApiDesignationController extends Controller
             return response()->json(['message'=>'Designation not found'],404);
 
         }
-        $designation= $designation->update($data);
+        $designation->desg_nm=$request->desg_nm;
+        $designation->grade_id=$request->grade_id;
+        $designation->save();
 
         return response()->json(['message' => 'Designation updated successfully', 'data' => $designation], 201);
     }
@@ -56,7 +61,7 @@ class ApiDesignationController extends Controller
         return response()->json(['message'=>'Designation deleted successfully'],200);
     }
     public function getAll(){
-        $designation=Designation::find($id);
+        $designation=Designation::get();
         return $designation;
     }
 }

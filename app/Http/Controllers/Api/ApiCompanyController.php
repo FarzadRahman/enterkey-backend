@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Branch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Company;
@@ -18,7 +19,7 @@ class ApiCompanyController extends Controller
 
 
         $validator = Validator::make($request->all(), [
-            'company_name' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'contact_address'=>'required|string',
             'contact_number'=>'required|string',
             'contact_person'=>'required|string',
@@ -38,7 +39,7 @@ class ApiCompanyController extends Controller
 //        $company = Company::create($data);
 
         $company=new Company();
-        $company->company_name=$request->company_name;
+        $company->company_name=$request->name;
         $company->contact_address=$request->contact_address;
         $company->contact_number=$request->contact_number;
         $company->contact_person=$request->contact_person;
@@ -52,7 +53,7 @@ class ApiCompanyController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'company_name' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'contact_address'=>'required|string',
             'contact_number'=>'required|string',
             'contact_person'=>'required|string',
@@ -81,9 +82,6 @@ class ApiCompanyController extends Controller
         $company->company_tin=$request->company_tin;
         $company->save();
 
-
-
-
         return response()->json(['message' => 'Company updated successfully', 'data' => $company], 200);
     }
     public function destroy($id)
@@ -92,6 +90,11 @@ class ApiCompanyController extends Controller
 
         if (!$company) {
             return response()->json(['message' => 'Company not found'], 404);
+        }
+        $branches = Branch::where('company_id', $id)->get();
+
+        if ($branches->count() > 0) {
+            return response()->json(['message' => 'Company cannot be deleted because it has associated branches'], 200);
         }
 
         $company->delete();

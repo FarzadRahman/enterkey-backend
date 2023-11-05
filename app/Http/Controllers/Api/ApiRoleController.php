@@ -21,8 +21,9 @@ class ApiRoleController extends Controller
 
         $data = $validator->validated(); // Retrieve the validated data
 
-        $role = Role::create($data);
-
+        $role = new Role();
+        $role->role_name=$request->role_name;
+        $role->save();
         return response()->json(['message' => 'Role created successfully', 'data' => $role], 201);
     }
     public function update(Request $request,$id)
@@ -41,7 +42,8 @@ class ApiRoleController extends Controller
             return response()->json(['message'=>'Role not found'],404);
         }
 
-        $role = $role->update($data);
+        $role->role_name=$request->role_name;
+        $role->save();
 
         return response()->json(['message' => 'Role Updated successfully', 'data' => $role], 201);
 

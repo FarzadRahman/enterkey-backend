@@ -21,14 +21,16 @@ class ApiDepartmentController extends Controller
 
         $data = $validator->validated(); // Retrieve the validated data
 
-        $department = Department::create($data);
+        $department =new Department();
+        $department->department_name=$request->department_name;
+        $department->save();
 
         return response()->json(['message' => 'Department created successfully', 'data' => $department], 201);
     }
     public function update(Request $request,$id)
     {
         $validator = Validator::make($request->all(), [
-            'department_name' => 'string|max:255',
+            'department_name' => 'required|string|max:255',
         ]);
 
         if ($validator->fails()) {
@@ -40,7 +42,8 @@ class ApiDepartmentController extends Controller
         if(!$department){
             return response()->json(['message'=>'Department not found'],404);
         }
-        $department = $department->update($data);
+        $department->department_name=$request->department_name;
+        $department->save();
 
         return response()->json(['message' => 'Department created successfully', 'data' => $department], 201);
     }
