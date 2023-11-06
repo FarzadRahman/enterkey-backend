@@ -17,9 +17,10 @@ class ApiCompanyController extends Controller
     public function store(Request $request)
     {
 
+//        return $request;
 
         $validator = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
+            'company_name' => 'required|string|max:255',
             'contact_address'=>'required|string',
             'contact_number'=>'required|string',
             'contact_person'=>'required|string',
@@ -39,7 +40,7 @@ class ApiCompanyController extends Controller
 //        $company = Company::create($data);
 
         $company=new Company();
-        $company->company_name=$request->name;
+        $company->company_name=$request->company_name;
         $company->contact_address=$request->contact_address;
         $company->contact_number=$request->contact_number;
         $company->contact_person=$request->contact_person;
