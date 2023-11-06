@@ -36,6 +36,12 @@ class ApiEmployeeController extends Controller
         $user->name=$request->full_name;
         $user->email=$request->email_address;
         $user->password=Hash::make($request->password);
+        if($request->company){
+            $user->company=$request->company;
+        }
+        else{
+            $user->company=0;
+        }
         $user->save();
 
         $employee=new Employee();
@@ -63,7 +69,7 @@ class ApiEmployeeController extends Controller
             'email_address' => 'email|max:255',
             'office_id' => 'string',
             'branch_id' => 'required|integer',
-            'user_id' => 'integer',
+//            'user_id' => 'integer',
             'designation_id' => 'integer',
             'department_id' => 'integer',
             'signature' => 'nullable|string',

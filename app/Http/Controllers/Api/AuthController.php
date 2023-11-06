@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Company;
 use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
@@ -68,8 +69,8 @@ class AuthController extends Controller
             $u= auth('api')->user();
 //            $u=['user'=>$u];
             $t=$this->respondWithToken($token);
-
-            return response()->json(['access_token' => $token,'user'=>$u], 200);
+            $company=Company::where('comp_id',auth('api')->user()->company)->first();
+            return response()->json(['access_token' => $token,'user'=>$u,'company'=>$company], 200);
 //            return $this->respondWithToken($token);
         }
 
