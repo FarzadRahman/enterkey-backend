@@ -26,6 +26,11 @@ class ApiRoleController extends Controller
         $role->save();
         return response()->json(['message' => 'Role created successfully', 'data' => $role], 201);
     }
+
+    public function edit($id){
+        $role=Role::find($id);
+        return response()->json(['data' => $role], 200);
+    }
     public function update(Request $request,$id)
     {
         $validator = Validator::make($request->all(), [
@@ -58,6 +63,7 @@ class ApiRoleController extends Controller
     }
     public function getAll(){
         $role=Role::get();
-        return $role;
+
+        return response()->json(['data' => $role], 200);
     }
 }
