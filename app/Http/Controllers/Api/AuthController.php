@@ -17,16 +17,28 @@ class AuthController extends Controller
         $validator=Validator::make($request->all(),[
             'name'=>'required|string',
             'email'=>'required|string|unique:users',
+            'phone'=>'required',
             'password'=>'required|string',
+            'role_id'=>'required',
+            'company_id'=>'required'
         ]);
         if($validator->fails()){
             return response()->json($validator->errors(),400);
         }
-        $user=User::create([
-            'name'=>$request->name,
-            'email'=>$request->email,
-            'password'=>Hash::make($request->password)
-        ]);
+//        $user=User::create([
+//            'name'=>$request->name,
+//            'email'=>$request->email,
+//            'password'=>Hash::make($request->password)
+//        ]);
+        $user=new User();
+        $user->name=$request->name;
+        $user->email=$request->email;
+        $user->phone=$request->phone;
+        $user->password=Hash::make($request->password);
+        $user->role_id=$request->role_id;
+        $user->company=$request->company_id;
+        $user->save();
+
         return response()->json([
             'message'=>'registered',
             'user'=>$user
