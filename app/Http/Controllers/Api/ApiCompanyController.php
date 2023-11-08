@@ -105,7 +105,13 @@ class ApiCompanyController extends Controller
 
 
     public function getAll(){
-        $companies=Company::get();
+        $companies=Company::select('*');
+
+        if( auth()->user()->role_id>=2){
+            $companies=$companies->where('comp_id',auth()->user()->company);
+        }
+
+        $companies=$companies->get();
 
         return $companies;
     }

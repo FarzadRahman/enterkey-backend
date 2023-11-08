@@ -9,6 +9,10 @@ use App\Models\Branch;
 
 class ApiBranchController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(['api']);
+    }
     public function store(Request $request)
     {
 
@@ -55,7 +59,14 @@ class ApiBranchController extends Controller
         return response()->json(['message' => 'Branch Updated successfully', 'data' => $branch], 201);
     }
     public function getAll(){
-        $branches=Branch::get();
+        $branches=Branch::select('*');
+        if( auth()->user()->role_id==2){
+            $branches=$branches->where('company_id',auth()->user()->company);
+        }
+        elseif (auth()->user()->role_id>2){
+            return response(['message' => 'Access Forbidden'],403);
+        }
+        $branches=$branches->get();
         return $branches;
     }
     public function destroy($id)

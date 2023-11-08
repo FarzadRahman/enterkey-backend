@@ -62,6 +62,10 @@ class ApiDesignationController extends Controller
     }
     public function getAll(){
         $designation=Designation::get();
+
+
+
+
         return $designation;
     }
 }

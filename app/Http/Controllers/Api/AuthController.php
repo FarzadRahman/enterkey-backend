@@ -13,6 +13,12 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(['api'], ['except' => [
+            'login'
+        ]]);
+    }
     public function register(Request $request){
 
         $validator=Validator::make($request->all(),[
@@ -67,7 +73,17 @@ class AuthController extends Controller
     // }
 
     public function users(){
-        $users=User::paginate();
+        $users=User::leftJoin('roles','roles.role_id','users.role_id')
+            ->leftJoin('company','company.comp_id','users.company');
+
+
+        if( auth()->user()->role_id==2){
+            $users=$users->where('company',auth()->user()->company);
+        }
+        elseif (auth()->user()->role_id>2){
+            return response(['message' => 'Access Forbidden'],403);
+        }
+        $users=$users->paginate();
 
         return response()->json(['users' => $users], 200);
     }
