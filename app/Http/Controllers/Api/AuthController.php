@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Validator;
 class AuthController extends Controller
 {
     public function register(Request $request){
+
         $validator=Validator::make($request->all(),[
             'name'=>'required|string',
             'email'=>'required|string|unique:users',
@@ -22,9 +23,13 @@ class AuthController extends Controller
             'role_id'=>'required',
             'company_id'=>'required'
         ]);
+
+
         if($validator->fails()){
             return response()->json($validator->errors(),400);
         }
+
+
 //        $user=User::create([
 //            'name'=>$request->name,
 //            'email'=>$request->email,
@@ -38,6 +43,8 @@ class AuthController extends Controller
         $user->role_id=$request->role_id;
         $user->company=$request->company_id;
         $user->save();
+
+
 
         return response()->json([
             'message'=>'registered',
@@ -59,6 +66,11 @@ class AuthController extends Controller
     //     return $this->respondWithToken($token);
     // }
 
+    public function users(){
+        $users=User::paginate();
+
+        return response()->json(['users' => $users], 200);
+    }
     public function logout(){
         auth()->logout();
 

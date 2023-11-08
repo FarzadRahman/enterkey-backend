@@ -11,6 +11,8 @@ class ApiBranchController extends Controller
 {
     public function store(Request $request)
     {
+
+
         $validator = Validator::make($request->all(), [
             'branch_name' => 'required|string|max:255',
             'company_id' => 'required|integer',
