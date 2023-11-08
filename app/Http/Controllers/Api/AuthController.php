@@ -13,7 +13,30 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
+
+    public function __construct()
+    {
+        $this->middleware(['api'], ['except' => [
+            'login'
+        ]]);
+    }
+    public function changePassword(Request $request){
+//        return $request;
+
+        $user = User::findOrFail(auth()->user()->id);
+
+        if(Hash::check($request->oldPassword, $user->password)){
+            $user->password=Hash::make($request->password);
+            $user->save();
+
+            return response()->json(['message'=>'Password Changed Successfully'],200);
+        }
+        else{
+            return response()->json(['message'=>'Old Password Does not match'],203);
+        }
+    }
     public function register(Request $request){
+
         $validator=Validator::make($request->all(),[
             'name'=>'required|string',
             'email'=>'required|string|unique:users',
@@ -22,9 +45,13 @@ class AuthController extends Controller
             'role_id'=>'required',
             'company_id'=>'required'
         ]);
+
+
         if($validator->fails()){
             return response()->json($validator->errors(),400);
         }
+
+
 //        $user=User::create([
 //            'name'=>$request->name,
 //            'email'=>$request->email,
@@ -33,11 +60,13 @@ class AuthController extends Controller
         $user=new User();
         $user->name=$request->name;
         $user->email=$request->email;
-        $user->phone=$request->phone;
+//        $user->phone=$request->phone;
         $user->password=Hash::make($request->password);
         $user->role_id=$request->role_id;
         $user->company=$request->company_id;
         $user->save();
+
+
 
         return response()->json([
             'message'=>'registered',
@@ -59,6 +88,21 @@ class AuthController extends Controller
     //     return $this->respondWithToken($token);
     // }
 
+    public function users(){
+        $users=User::leftJoin('roles','roles.role_id','users.role_id')
+            ->leftJoin('company','company.comp_id','users.company');
+
+
+        if( auth()->user()->role_id==2){
+            $users=$users->where('company',auth()->user()->company);
+        }
+        elseif (auth()->user()->role_id>2){
+            return response(['message' => 'Access Forbidden'],403);
+        }
+        $users=$users->paginate();
+
+        return response()->json(['users' => $users], 200);
+    }
     public function logout(){
         auth()->logout();
 

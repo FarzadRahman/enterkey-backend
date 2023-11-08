@@ -32,6 +32,8 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::post('/register',[AuthController::class,'register']);
     Route::post('/login',[AuthController::class,'login']);
     Route::post('/dashboard',[AuthController::class,'dashboard']);
+    Route::get('/users',[AuthController::class,'users']);
+    Route::post('/auth/change-password',[AuthController::class,'changePassword']);
     //Route::post('/employees/create',[ApiEmployeeController::class,'store']);
 
     Route::post('/logout',[AuthController::class,'logout']);
