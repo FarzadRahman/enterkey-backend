@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\ApiGradeController;
 use App\Http\Controllers\Api\ApiLeaveStatusController;
 use App\Http\Controllers\Api\ApiLeaveTypeController;
 use App\Http\Controllers\Api\ApiRoleController;
+use App\Http\Controllers\Api\ApiUserController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
@@ -34,6 +35,8 @@ Route::group(['middleware'=>'api'],function($routes){
     //Route::post('/employees/create',[ApiEmployeeController::class,'store']);
 
     Route::post('/logout',[AuthController::class,'logout']);
+
+    Route::get('/users',[ApiUserController::class,'getAll']);
 
     Route::get('/employees',[ApiEmployeeController::class,'getAll']);
     Route::post('/employees/create',[ApiEmployeeController::class,'store']);
