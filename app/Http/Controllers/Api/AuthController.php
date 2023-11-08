@@ -13,11 +13,27 @@ use Illuminate\Support\Facades\Validator;
 
 class AuthController extends Controller
 {
+
     public function __construct()
     {
         $this->middleware(['api'], ['except' => [
             'login'
         ]]);
+    }
+    public function changePassword(Request $request){
+//        return $request;
+
+        $user = User::findOrFail(auth()->user()->id);
+
+        if(Hash::check($request->oldPassword, $user->password)){
+            $user->password=Hash::make($request->password);
+            $user->save();
+
+            return response()->json(['message'=>'Password Changed Successfully'],200);
+        }
+        else{
+            return response()->json(['message'=>'Old Password Does not match'],203);
+        }
     }
     public function register(Request $request){
 
