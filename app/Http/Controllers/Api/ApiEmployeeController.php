@@ -115,8 +115,10 @@ class ApiEmployeeController extends Controller
         return response()->json(['message' => 'Employee deleted successfully'], 200);
     }
     public function getAll(){
-        $employee=Employee::get();
-        return $employee;
+//        $employee=Employee::get();
+  //      return $employee;
+        $employees = Employee::with(['designation', 'branch', 'department'])->get();
+        return $employees;
     }
     public function resetPassword(Request $request){
         $validator=Validator::make($request->all(),[

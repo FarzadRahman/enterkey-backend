@@ -9,6 +9,7 @@ use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+use Tymon\JWTAuth\Facades\JWTAuth;
 
 
 class AuthController extends Controller
@@ -105,7 +106,9 @@ class AuthController extends Controller
     }
     public function logout(){
         auth()->logout();
+//        JWTAuth::parseToken()->invalidate(); // Invalidate the JWT token
 
+        return response()->json(['message' => 'Logged out successfully']);
 // Pass true to force the token to be blacklisted "forever"
 //        auth()->logout(true);
     }

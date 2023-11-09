@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
+use App\Models\Designation;
 class Employee extends Model
 {
     use HasFactory;
@@ -22,4 +22,16 @@ class Employee extends Model
         'department_id',
         'signature',
     ];
+    public function designation()
+    {
+        return $this->belongsTo(Designation::class, 'designation_id');
+    }
+    public function department()
+    {
+        return $this->belongsTo(Department::class, 'department_id');
+    }
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class, 'branch_id');
+    }
 }
