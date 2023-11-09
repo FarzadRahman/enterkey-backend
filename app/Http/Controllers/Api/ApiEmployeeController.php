@@ -117,7 +117,7 @@ class ApiEmployeeController extends Controller
     public function getAll(){
 //        $employee=Employee::get();
   //      return $employee;
-        $employees = Employee::with(['designation', 'branch', 'department'])->get();
+        $employees = Employee::with(['designation', 'branch', 'department'])->paginate(10);
         return $employees;
     }
     public function resetPassword(Request $request){

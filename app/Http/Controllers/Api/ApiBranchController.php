@@ -59,14 +59,19 @@ class ApiBranchController extends Controller
         return response()->json(['message' => 'Branch Updated successfully', 'data' => $branch], 201);
     }
     public function getAll(){
-        $branches=Branch::select('*');
+        try {
+            $user = auth()->userOrFail();
+        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
+            return response(['message' => 'Login first'], 401);
+        }
+        $branches=Branch::select('*')->with('company');
         if( auth()->user()->role_id==2){
             $branches=$branches->where('company_id',auth()->user()->company);
         }
         elseif (auth()->user()->role_id>2){
             return response(['message' => 'Access Forbidden'],403);
         }
-        $branches=$branches->get();
+        $branches=$branches->paginate(10);
         return $branches;
     }
     public function destroy($id)

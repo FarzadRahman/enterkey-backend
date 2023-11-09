@@ -12,4 +12,9 @@ class Branch extends Model
     protected $primaryKey = 'bran_id'; // Specify the primary key column
     public $timestamps = false;
     protected $fillable = ['branch_name', 'company_id'];
+
+    public function company()
+    {
+        return $this->belongsTo(Company::class, 'company_id');
+    }
 }

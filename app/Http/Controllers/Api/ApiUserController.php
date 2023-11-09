@@ -8,6 +8,10 @@ use Illuminate\Http\Request;
 
 class ApiUserController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(['api']);
+    }
     public function getAll()
     {
         $user= User::leftJoin('company', 'users.company', '=', 'company.comp_id')

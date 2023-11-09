@@ -9,7 +9,10 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Company;
 class ApiCompanyController extends Controller
 {
-
+    public function __construct()
+    {
+        $this->middleware(['api']);
+    }
     public function edit($id){
         $company = Company::findOrFail($id);
         return response()->json(['data' => $company], 200);

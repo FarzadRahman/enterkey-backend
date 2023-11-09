@@ -9,6 +9,10 @@ use Illuminate\Support\Facades\Validator;
 
 class ApiDesignationController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(['api']);
+    }
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
