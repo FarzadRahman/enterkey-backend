@@ -60,7 +60,12 @@ class ApiLeaveTypeController extends Controller
         return response()->json(['message'=>'Leave type deleted successfully'],200);
     }
     public function getAll(){
-        $leaveType=LeaveType::get();
+        try {
+            $user = auth()->userOrFail();
+        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
+            return response(['message' => 'Login first'], 401);
+        }
+        $leaveType=LeaveType::paginate(10);
         return $leaveType;
     }
 }

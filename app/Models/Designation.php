@@ -12,4 +12,9 @@ class Designation extends Model
     protected $primaryKey = 'desg_id'; // Specify the primary key column
     public $timestamps = false;
     protected $fillable = ['desg_nm','grade_id'];
+
+    public function grade()
+    {
+        return $this->belongsTo(Grade::class, 'grade_id');
+    }
 }

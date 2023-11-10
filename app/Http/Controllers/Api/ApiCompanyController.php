@@ -108,13 +108,18 @@ class ApiCompanyController extends Controller
 
 
     public function getAll(){
+        try {
+            $user = auth()->userOrFail();
+        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
+            return response(['message' => 'Login first'], 401);
+        }
         $companies=Company::select('*');
 
         if( auth()->user()->role_id>=2){
             $companies=$companies->where('comp_id',auth()->user()->company);
         }
 
-        $companies=$companies->get();
+        $companies=$companies->paginate(10);
 
         return $companies;
     }

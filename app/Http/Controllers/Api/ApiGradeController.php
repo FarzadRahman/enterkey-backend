@@ -62,7 +62,12 @@ class ApiGradeController extends Controller
         return response()->json(['message'=>'Grade deleted successfully'],200);
     }
     public function getAll(){
-        $grade=Grade::get();
+        try {
+            $user = auth()->userOrFail();
+        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
+            return response(['message' => 'Login first'], 401);
+        }
+        $grade=Grade::paginate(10);
         return $grade;
     }
 }

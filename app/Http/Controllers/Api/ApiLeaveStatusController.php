@@ -61,7 +61,12 @@ class ApiLeaveStatusController extends Controller
         return response()->json(['message'=>'Leave Status deleted Successfully'],200);
     }
     public function getAll(){
-        $leaveStatus=LeaveStatus::get();
+        try {
+            $user = auth()->userOrFail();
+        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
+            return response(['message' => 'Login first'], 401);
+        }
+        $leaveStatus=LeaveStatus::paginate(10);
         return $leaveStatus;
     }
 

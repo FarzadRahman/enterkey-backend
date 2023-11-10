@@ -65,11 +65,12 @@ class ApiDesignationController extends Controller
         return response()->json(['message'=>'Designation deleted successfully'],200);
     }
     public function getAll(){
-        $designation=Designation::get();
-
-
-
-
+        try {
+            $user = auth()->userOrFail();
+        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
+            return response(['message' => 'Login first'], 401);
+        }
+        $designation=Designation::with('grade')->paginate(10);
         return $designation;
     }
 }

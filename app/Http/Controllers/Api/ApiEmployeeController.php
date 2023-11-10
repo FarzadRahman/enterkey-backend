@@ -117,6 +117,11 @@ class ApiEmployeeController extends Controller
     public function getAll(){
 //        $employee=Employee::get();
   //      return $employee;
+        try {
+            $user = auth()->userOrFail();
+        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
+            return response(['message' => 'Login first'], 401);
+        }
         $employees = Employee::with(['designation', 'branch', 'department'])->paginate(10);
         return $employees;
     }

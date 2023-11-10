@@ -64,7 +64,12 @@ class ApiDepartmentController extends Controller
 
     }
     public function getAll(){
-        $deparment=Department::get();
+        try {
+            $user = auth()->userOrFail();
+        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
+            return response(['message' => 'Login first'], 401);
+        }
+        $deparment=Department::paginate(10);
         return $deparment;
     }
 }
