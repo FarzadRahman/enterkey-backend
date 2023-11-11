@@ -141,4 +141,16 @@ class ApiEmployeeController extends Controller
 
         return response()->json(['message'=>'Password reset successfully'],200);
     }
+    public function getAllEmployee(){
+        try {
+            $user = auth()->userOrFail();
+        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
+            return response(['message' => 'Login first'], 401);
+        }
+        $employeeList= Employee::leftjoin('users','users.id','employee.user_id')
+            ->where('user_id','!=',auth()->user()->id)
+            ->where('users.company','=',auth()->user()->company)
+            ->get();
+        return $employeeList;
+    }
 }
