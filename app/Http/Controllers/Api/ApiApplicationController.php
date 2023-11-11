@@ -16,6 +16,7 @@ class ApiApplicationController extends Controller
     }
 
     public function store(Request $request){
+        return $request;
         $Sdate = Carbon::parse($request->start)->startOfDay();
         $edate = Carbon::parse($request->end)->endOfDay();
         $days = $Sdate->diffInDays($edate);
