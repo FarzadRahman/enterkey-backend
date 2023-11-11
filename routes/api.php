@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\api\ApiApplicationController;
 use App\Http\Controllers\Api\ApiBranchController;
 use App\Http\Controllers\Api\ApiCompanyController;
 use App\Http\Controllers\Api\ApiDepartmentController;
@@ -90,6 +91,8 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::post('/role/update/{id}',[ApiRoleController::class,'update']);
     Route::post('/role/delete/{id}',[ApiRoleController::class,'destroy']);
     Route::get('/role',[ApiRoleController::class,'getAll']);
+
+    Route::post('/leave/create',[ApiApplicationController::class,'store']);
 
 
 });
