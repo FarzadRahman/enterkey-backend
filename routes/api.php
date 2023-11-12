@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\api\ApiApplicationController;
+use App\Http\Controllers\Api\ApiApplicationController;
 use App\Http\Controllers\Api\ApiBranchController;
 use App\Http\Controllers\Api\ApiCompanyController;
 use App\Http\Controllers\Api\ApiDepartmentController;
@@ -96,5 +96,6 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::post('/leave/create',[ApiApplicationController::class,'store']);
 
     Route::get('/leave/employee-list',[ApiApplicationController::class,'getLeaveEmployee']);
-
+    Route::get('/leave/application-list',[ApiApplicationController::class,'getApplicationList']);
+    Route::get('/leave/own-application-list',[ApiApplicationController::class,'getOwnApplicationList']);
 });

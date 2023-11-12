@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\api;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Application;
@@ -57,5 +57,25 @@ class ApiApplicationController extends Controller
             ->where('users.company','=',auth()->user()->company)
             ->get();
         return $employeeList;
+    }
+    public function getApplicationList(){
+        try {
+            $user = auth()->userOrFail();
+        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
+            return response(['message' => 'Login first'], 401);
+        }
+        $empId=Employee::where('user_id',auth()->user()->id)->first();
+        $application=Application::where('approval_id',$empId->emp_id)->get();
+        return $application;
+    }
+    public function getOwnApplicationList(){
+        try {
+            $user = auth()->userOrFail();
+        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
+            return response(['message' => 'Login first'], 401);
+        }
+        $empId=Employee::where('user_id',auth()->user()->id)->first();
+        $application=Application::where('employee_id',$empId->emp_id)->get();
+        return $application;
     }
 }
