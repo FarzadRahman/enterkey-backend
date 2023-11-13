@@ -90,6 +90,7 @@ class AuthController extends Controller
     // }
 
     public function users(){
+
         $users=User::leftJoin('roles','roles.role_id','users.role_id')
             ->leftJoin('company','company.comp_id','users.company');
 

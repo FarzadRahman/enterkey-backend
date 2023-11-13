@@ -15,7 +15,8 @@ class ApiUserController extends Controller
     public function getAll()
     {
         $user= User::leftJoin('company', 'users.company', '=', 'company.comp_id')
-            ->select('users.*', 'company.*')
+            ->leftJoin('roles','roles.role_id','users.role_id')
+            ->select('users.*', 'company.*','roles.role_name')
             ->paginate(10);;
         return response()->json(
             [
