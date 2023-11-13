@@ -7,10 +7,16 @@ use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Str;
 
 class ApiEmployeeController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware(['api']);
+    }
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
@@ -132,7 +138,7 @@ class ApiEmployeeController extends Controller
         if($validator->fails()){
             return response()->json($validator->errors(),400);
         }
-        $user=User::find($request->id);
+        $user=User::find($request->email);
         if (!$user){
             return response()->json(['message'=>'No user found'],404);
         }
@@ -141,16 +147,77 @@ class ApiEmployeeController extends Controller
 
         return response()->json(['message'=>'Password reset successfully'],200);
     }
-    public function getAllEmployee(){
+    public function profile(){
         try {
             $user = auth()->userOrFail();
         } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
             return response(['message' => 'Login first'], 401);
         }
-        $employeeList= Employee::leftjoin('users','users.id','employee.user_id')
-            ->where('user_id','!=',auth()->user()->id)
-            ->where('users.company','=',auth()->user()->company)
-            ->get();
-        return $employeeList;
+        $employee = Employee::where('user_id', auth()->user()->id)
+            ->with(['designation', 'designation.grade', 'department', 'branch', 'branch.company'])
+            ->first();
+        return $employee;
     }
+    public function updateProfile(Request $request)
+    {
+        try {
+            $user = auth()->userOrFail();
+        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
+            return response(['message' => 'Login first'], 401);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'full_name' => 'string',
+            'phone_number' => 'string',
+            'signature' => 'nullable|string', // Adjust validation for base64-encoded string
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
+        $employee = Employee::where('user_id', auth()->user()->id)->first();
+        $user = User::where('id', auth()->user()->id)->first();
+
+        if (!$employee) {
+            return response()->json(['message' => 'Employee not found'], 404);
+        }
+
+        if ($request->full_name) {
+            $employee->full_name = $request->full_name;
+            $user->name = $request->full_name;
+        }
+
+        if ($request->phone_number) {
+            $employee->phone_number = $request->phone_number;
+            $user->phone = $request->phone_number;
+        }
+
+        if ($request->signature) {
+            if ($employee->signature) {
+                $previousSignaturePath = public_path('signature') . '/' . $employee->signature;
+                if (file_exists($previousSignaturePath)) {
+                    unlink($previousSignaturePath);
+                }
+            }
+
+            $imageData = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $request->signature));
+
+            $imageName = "Employee-Signature-" . Str::random(10) . '.webp';
+
+            Storage::disk('local')->put('public/signature/' . $imageName, $imageData);
+
+            $employee->signature = $imageName;
+        }
+
+        $employee->save();
+        $user->save();
+
+        return response()->json([
+            'message' => 'Profile updated successfully',
+            'employee' => $employee
+        ], 200);
+    }
+
+
 }

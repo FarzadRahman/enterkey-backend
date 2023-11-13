@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\api\ApiApplicationController;
+use App\Http\Controllers\Api\ApiApplicationController;
 use App\Http\Controllers\Api\ApiBranchController;
 use App\Http\Controllers\Api\ApiCompanyController;
 use App\Http\Controllers\Api\ApiDepartmentController;
@@ -42,11 +42,13 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::get('/users',[ApiUserController::class,'getAll']);
 
     Route::get('/employees',[ApiEmployeeController::class,'getAll']);
-    Route::get('/employees/list',[ApiEmployeeController::class,'getAllEmployee']);
+//    Route::get('/employees/list',[ApiEmployeeController::class,'getAllEmployee']);
     Route::post('/employees/create',[ApiEmployeeController::class,'store']);
     Route::post('/employees/update/{id}',[ApiEmployeeController::class,'update']);
     Route::post('/employees/{id}',[ApiEmployeeController::class,'destroy']);
     Route::post('/employee/reset/password',[ApiEmployeeController::class,'resetPassword']);
+    Route::get('/employee/profile',[ApiEmployeeController::class,'profile']);
+    Route::post('/employee/update/profile',[ApiEmployeeController::class,'updateProfile']);
 
 //    Route::post('/company',[ApiCompanyController::class,'store']);
     Route::post('/company/create',[ApiCompanyController::class,'store']);
@@ -95,5 +97,9 @@ Route::group(['middleware'=>'api'],function($routes){
 
     Route::post('/leave/create',[ApiApplicationController::class,'store']);
 
+    Route::get('/leave/employee-list',[ApiApplicationController::class,'getLeaveEmployee']);
+    Route::get('/leave/application-list',[ApiApplicationController::class,'getApplicationList']);
+    Route::get('/leave/own-application-list',[ApiApplicationController::class,'getOwnApplicationList']);
+    Route::post('/leave/applied-list',[ApiApplicationController::class,'appliedList']);
 
 });

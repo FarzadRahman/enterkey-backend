@@ -122,6 +122,8 @@ class AuthController extends Controller
             ->first();
             // return response()->json(['message'=>$user->password]);
 
+
+
         if ($user &&
             Hash::check($request->password, $user->password)) {
             $token = $this->guard('api')->login($user);
