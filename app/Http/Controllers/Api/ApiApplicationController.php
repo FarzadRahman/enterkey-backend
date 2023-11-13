@@ -16,11 +16,13 @@ class ApiApplicationController extends Controller
     }
 
     public function store(Request $request){
-        return $request;
+//        return  auth('api')->user()->id;
         $Sdate = Carbon::parse($request->start)->startOfDay();
         $edate = Carbon::parse($request->end)->endOfDay();
         $days = $Sdate->diffInDays($edate);
         $total_days = $days + 1;
+
+
 
 //        $leave=Application::where('employee_id',$request->employee_id)->where('start',$request->start)->where('end',$request->end)->first();
         if ($request->end) {
@@ -30,18 +32,23 @@ class ApiApplicationController extends Controller
         }
 
         $emp = Employee::where('user_id', auth('api')->user()->id)
-            ->leftJoin('designations', 'designations.designation_id', 'employees.designation')
+            ->leftJoin('designation', 'designation.desg_id', 'employee.designation_id')
             ->first();
+
 
         $leave = Application::where('employee_id', $emp->id)
             ->where('approved_end_date', '>=', $request->start)
             ->where('approved_start_date', '<=', $endDate)->first();
+
+
 
         $chkLeavePending = Application::where('employee_id', $emp->id)
             ->where('start_date', '>=', $request->start)
             ->where('end_date', '<=', $endDate)
             ->where('status',1)
             ->first();
+
+
 
         if ($total_days > 10) {
 
@@ -71,6 +78,7 @@ class ApiApplicationController extends Controller
         } else {
 
 
+//            return "asdf";
 
             $application = new Application();
 
