@@ -105,14 +105,14 @@ class AuthController extends Controller
 
         return response()->json(['users' => $users], 200);
     }
-    public function logout(){
-        auth()->logout();
-//        JWTAuth::parseToken()->invalidate(); // Invalidate the JWT token
-
-        return response()->json(['message' => 'Logged out successfully']);
-// Pass true to force the token to be blacklisted "forever"
-//        auth()->logout(true);
-    }
+//    public function logout(){
+//        auth()->logout();
+////        JWTAuth::parseToken()->invalidate(); // Invalidate the JWT token
+//
+//        return response()->json(['message' => 'Logged out successfully']);
+//// Pass true to force the token to be blacklisted "forever"
+////        auth()->logout(true);
+//    }
     public function login(Request $request)
     {
 
