@@ -37,7 +37,7 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::post('/auth/change-password',[AuthController::class,'changePassword']);
     //Route::post('/employees/create',[ApiEmployeeController::class,'store']);
 
-    Route::post('/logout',[AuthController::class,'logout']);
+//    Route::post('/logout',[AuthController::class,'logout']);
 
     Route::get('/users',[ApiUserController::class,'getAll']);
 
@@ -102,5 +102,7 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::get('/leave/application-list',[ApiApplicationController::class,'getApplicationList']);
     Route::get('/leave/own-application-list',[ApiApplicationController::class,'getOwnApplicationList']);
     Route::post('/leave/applied-list',[ApiApplicationController::class,'appliedList']);
+    Route::post('/leave/application-approved/{id}',[ApiApplicationController::class,'applicationApproved']);
+    Route::post('/leave/application-pass/{id}',[ApiApplicationController::class,'applicationPass']);
 
 });

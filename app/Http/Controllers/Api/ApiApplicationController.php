@@ -108,4 +108,63 @@ class ApiApplicationController extends Controller
         return $datatables->make(true);
 
     }
+    public function applicationApproved(Request $request,$id){
+        try {
+            $user = auth()->userOrFail();
+        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
+            return response(['message' => 'Login first'], 401);
+        }
+        $emp=Employee::where('user_id',auth()->user()->id)
+            ->where('company',auth()->user()->company)->first();
+        $application=Application::where('approval_id',$emp->id)->find($id);
+        $appid = Application::select('employee_id')->where('approval_id',$emp->id)->find($id);
+
+        // $application->approved_total_days= $application->applied_total_days;
+        // $application->approved_start_date= $application->start_date;
+        // $application->approved_end_date= $application->end_date;
+        if($application->reviewer_start_date){
+            $application->approved_total_days= $application->review_total_days;
+            $application->approved_start_date= $application->reviewer_start_date;
+            $application->approved_end_date= $application->reviewer_end_date;
+        }
+        else
+        {
+            $application->approved_total_days= $application->applied_total_days;
+            $application->approved_start_date= $application->start_date;
+            $application->approved_end_date= $application->end_date;
+
+        }
+        $application->status= 2;
+       // $application->company=auth()->user()->company;
+        $application->save();
+
+        return response()->json([
+            'message'=>'Application approved successfully',
+            'application'=>$application
+        ],201);
+    }
+    public function applicationPass(Request $request,$id){
+        try {
+            $user = auth()->userOrFail();
+        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
+            return response(['message' => 'Login first'], 401);
+        }
+        $empId=Employee::where('user_id',auth()->user()->id)->first();
+        $application = Application::where('id', $id)
+            ->where(function ($query) use ($empId) {
+                $query->where('approval_id', $empId->emp_id)
+                    ->orWhere('reviewer_id', $empId->emp_id);
+            })
+            ->first();
+
+        if(!$application){
+            return response()->json(['message'=>'Application not found'],404);
+        }
+        $application->approval_id=$request->approval_id;
+        $application->save();
+        return response()->json([
+            'message'=>'Application pass successfully',
+            'application'=>$application
+        ],201);
+    }
 }
