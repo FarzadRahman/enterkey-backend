@@ -40,6 +40,7 @@ Route::group(['middleware'=>'api'],function($routes){
 //    Route::post('/logout',[AuthController::class,'logout']);
 
     Route::get('/users',[ApiUserController::class,'getAll']);
+    Route::post('/upload/image',[ApiUserController::class,'uploadImage']);
 
     Route::get('/employees',[ApiEmployeeController::class,'getAll']);
 //    Route::get('/employees/list',[ApiEmployeeController::class,'getAllEmployee']);

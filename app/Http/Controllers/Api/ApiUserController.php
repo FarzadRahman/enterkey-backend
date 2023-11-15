@@ -24,4 +24,37 @@ class ApiUserController extends Controller
                 'status' => true,
             ],200);
     }
+    public function base64ImgUpload($requestFile, $folder)
+    {
+
+        $file = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $requestFile));
+
+        $extension = explode('/', mime_content_type($requestFile))[1];
+
+
+        $safeName = time().'.'.$extension;
+        $success = file_put_contents(public_path().'/'.$folder.'/'.$safeName, $file);
+
+        return  $safeName;
+    }
+
+
+
+    public function uploadImage(Request $r){
+
+//        $file = base64_decode(preg_replace('#^data:image/\w+;base64,#i', '', $r['photo']));
+//
+//        $extension = explode('/', mime_content_type($r['photo']))[1];
+//
+//
+//        $safeName = time().'.'.$extension;
+//        $success = file_put_contents(public_path().'/uploads/'.$safeName, $file);
+
+        $fileName=$this->base64ImgUpload($r['photo'],'profile-picture');
+        User::where('id',auth()->user()->id)->update(['profile_picture'=>$fileName]);
+        return $fileName;
+
+
+
+    }
 }
