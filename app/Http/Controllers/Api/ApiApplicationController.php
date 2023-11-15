@@ -61,6 +61,19 @@ class ApiApplicationController extends Controller
             ->get();
         return $employeeList;
     }
+
+    public function getRecorderEmployee(){
+        try {
+            $user = auth()->userOrFail();
+        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
+            return response(['message' => 'Login first'], 401);
+        }
+        $employeeList= Employee::leftjoin('users','users.id','employee.user_id')
+            ->where('user_id','!=',auth()->user()->id)
+            ->where('users.company','=',auth()->user()->company)
+            ->get();
+        return $employeeList;
+    }
     public function getApplicationList(){
         try {
             $user = auth()->userOrFail();

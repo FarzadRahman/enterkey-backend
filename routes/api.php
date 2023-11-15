@@ -98,6 +98,7 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::post('/leave/create',[ApiApplicationController::class,'store']);
 
     Route::get('/leave/employee-list',[ApiApplicationController::class,'getLeaveEmployee']);
+    Route::get('/leave/recorder-list',[ApiApplicationController::class,'getRecorderEmployee']);
     Route::get('/leave/application-list',[ApiApplicationController::class,'getApplicationList']);
     Route::get('/leave/own-application-list',[ApiApplicationController::class,'getOwnApplicationList']);
     Route::post('/leave/applied-list',[ApiApplicationController::class,'appliedList']);
