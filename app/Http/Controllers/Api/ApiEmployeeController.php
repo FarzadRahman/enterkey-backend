@@ -102,7 +102,20 @@ class ApiEmployeeController extends Controller
         $employee->user_id = $request->user_id;
         $employee->designation_id = $request->designation_id;
         $employee->department_id = $request->department_id;
-        $employee->signature = $request->signature;
+        if($request->isRecorder){
+            $employee->isRecorder = 1;
+        }
+        else{
+            $employee->isRecorder = 0;
+        }
+
+        if($request->isApprover){
+            $employee->isApprover = 1;
+        }
+        else{
+            $employee->isApprover = 0;
+        }
+
 
         $employee->save();
 
