@@ -19,6 +19,7 @@ class ApiEmployeeController extends Controller
     }
     public function store(Request $request)
     {
+
         $validator = Validator::make($request->all(), [
             'full_name' => 'required|string|max:255',
             'gender' => 'required|string|max:10',
@@ -42,12 +43,9 @@ class ApiEmployeeController extends Controller
         $user->name=$request->full_name;
         $user->email=$request->email_address;
         $user->password=Hash::make($request->password);
-        if($request->company){
-            $user->company=$request->company;
-        }
-        else{
-            $user->company=0;
-        }
+        $user->company=auth()->user()->company;
+        $user->role_id = 3;
+        $user->phone = $request->phone_number;
         $user->save();
 
         $employee=new Employee();
@@ -60,6 +58,7 @@ class ApiEmployeeController extends Controller
         $employee->user_id = $user->id;
         $employee->designation_id = $request->designation_id;
         $employee->department_id = $request->department_id;
+
         if(isset($request->isApprover) && $request->isApprover){
             $employee->isApprover=1;
         }

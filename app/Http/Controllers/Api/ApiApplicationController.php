@@ -64,6 +64,7 @@ class ApiApplicationController extends Controller
     }
 
     public function getRecorderEmployee(){
+
         try {
             $user = auth()->userOrFail();
         } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
