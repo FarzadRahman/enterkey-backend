@@ -60,6 +60,20 @@ class ApiEmployeeController extends Controller
         $employee->user_id = $user->id;
         $employee->designation_id = $request->designation_id;
         $employee->department_id = $request->department_id;
+        if(isset($request->isApprover) && $request->isApprover){
+            $employee->isApprover=1;
+        }
+        else{
+            $employee->isApprover=0;
+        }
+        if(isset($request->isApprover) && $request->isRecorrder){
+            $employee->isRecorder=1;
+        }
+        else{
+            $employee->isRecorder=0;
+        }
+
+
         $employee->signature = $request->signature;
 
         $employee->save();
@@ -102,21 +116,18 @@ class ApiEmployeeController extends Controller
         $employee->user_id = $request->user_id;
         $employee->designation_id = $request->designation_id;
         $employee->department_id = $request->department_id;
-        if($request->isRecorder){
-            $employee->isRecorder = 1;
+        if(isset($request->isApprover) && $request->isApprover){
+            $employee->isApprover=1;
         }
         else{
-            $employee->isRecorder = 0;
+            $employee->isApprover=0;
         }
-
-        if($request->isApprover){
-            $employee->isApprover = 1;
+        if(isset($request->isRecorrder) && $request->isRecorrder){
+            $employee->isRecorder=1;
         }
         else{
-            $employee->isApprover = 0;
+            $employee->isRecorder=0;
         }
-
-
         $employee->save();
 
         return response()->json(['message' => 'Employee updated successfully', 'data' => $employee], 200);

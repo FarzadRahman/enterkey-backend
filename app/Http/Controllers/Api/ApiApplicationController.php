@@ -58,6 +58,7 @@ class ApiApplicationController extends Controller
         $employeeList= Employee::leftjoin('users','users.id','employee.user_id')
             ->where('user_id','!=',auth()->user()->id)
             ->where('users.company','=',auth()->user()->company)
+            ->where('employee.isApprover',1)
             ->get();
         return $employeeList;
     }
@@ -71,6 +72,7 @@ class ApiApplicationController extends Controller
         $employeeList= Employee::leftjoin('users','users.id','employee.user_id')
             ->where('user_id','!=',auth()->user()->id)
             ->where('users.company','=',auth()->user()->company)
+            ->where('employee.isRecorder',1)
             ->get();
         return $employeeList;
     }
