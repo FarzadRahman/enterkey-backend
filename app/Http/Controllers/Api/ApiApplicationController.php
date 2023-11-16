@@ -123,6 +123,12 @@ class ApiApplicationController extends Controller
         return $appListApplication;
     }
 
+    public function getApplicationDetails($id){
+        $application=Application::find($id);
+
+        return $application;
+    }
+
     public function getApplicationForApprover(){
         $emp=Employee::where('user_id',auth()->user()->id)->first();
         $appList=Application::select('applications.*','employee.full_name')
