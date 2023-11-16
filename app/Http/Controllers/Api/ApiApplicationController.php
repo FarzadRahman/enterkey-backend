@@ -33,6 +33,7 @@ class ApiApplicationController extends Controller
         }
         $application = new Application();
         $application->approval_id=$request->approval_id;
+        $application->reviewer_id=$request->reviewer_id;
         $application->employee_id=$emp->emp_id;
         $application->start_date=$request->start;
         $application->end_date=$endDate;
@@ -111,6 +112,26 @@ class ApiApplicationController extends Controller
         return $datatables->make(true);
 
     }
+
+    public function getApplicationForRecorder(){
+        $emp=Employee::where('user_id',auth()->user()->id)->first();
+        $appList=Application::select('applications.*','employee.full_name')
+            ->where('reviewer_id',$emp->emp_id)
+            ->leftJoin('employee','employee.emp_id','applications.approval_id')
+            ->get();
+
+        return $appListApplication;
+    }
+
+    public function getApplicationForApprover(){
+        $emp=Employee::where('user_id',auth()->user()->id)->first();
+        $appList=Application::select('applications.*','employee.full_name')
+            ->where('approval_id',$emp->emp_id)
+            ->leftJoin('employee','employee.emp_id','applications.approval_id')
+            ->get();
+
+        return $appListApplication;
+    }
     public function applicationApproved(Request $request,$id){
         try {
             $user = auth()->userOrFail();
@@ -119,8 +140,9 @@ class ApiApplicationController extends Controller
         }
         $emp=Employee::where('user_id',auth()->user()->id)
             ->where('company',auth()->user()->company)->first();
+
         $application=Application::where('approval_id',$emp->id)->find($id);
-        $appid = Application::select('employee_id')->where('approval_id',$emp->id)->find($id);
+//        $appid = Application::select('employee_id')->where('approval_id',$emp->id)->find($id);
 
         // $application->approved_total_days= $application->applied_total_days;
         // $application->approved_start_date= $application->start_date;
