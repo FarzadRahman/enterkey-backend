@@ -37,10 +37,11 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::post('/auth/change-password',[AuthController::class,'changePassword']);
     //Route::post('/employees/create',[ApiEmployeeController::class,'store']);
 
-//    Route::post('/logout',[AuthController::class,'logout']);
+    Route::post('/logout',[AuthController::class,'logout']);
 
     Route::get('/users',[ApiUserController::class,'getAll']);
     Route::post('/upload/image',[ApiUserController::class,'uploadImage']);
+    Route::post('/upload/sign',[ApiUserController::class,'uploadSign']);
 
     Route::get('/employees',[ApiEmployeeController::class,'getAll']);
 //    Route::get('/employees/list',[ApiEmployeeController::class,'getAllEmployee']);

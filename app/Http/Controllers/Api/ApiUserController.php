@@ -59,7 +59,16 @@ class ApiUserController extends Controller
         } else {
             return response()->json(['status' => 500, 'message' => 'Failed to upload profile picture']);
         }
-
-
+    }
+    public function uploadSign(Request $r){
+        $fileName=$this->base64ImgUpload($r['sign'],'signature');
+        //User::where('id',auth()->user()->id)->update(['profile_picture'=>$fileName]);
+        //return $fileName;
+        if ($fileName) {
+            User::where('id', auth()->user()->id)->update(['signature' => $fileName]);
+            return response()->json(['status' => 200, 'message' => 'Signature uploaded successfully']);
+        } else {
+            return response()->json(['status' => 500, 'message' => 'Failed to upload signature']);
+        }
     }
 }
