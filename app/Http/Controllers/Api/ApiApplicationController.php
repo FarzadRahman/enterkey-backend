@@ -120,7 +120,7 @@ class ApiApplicationController extends Controller
             ->leftJoin('employee','employee.emp_id','applications.approval_id')
             ->get();
 
-        return $appListApplication;
+        return $appList;
     }
 
     public function getApplicationDetails($id){
@@ -131,7 +131,7 @@ class ApiApplicationController extends Controller
 
     public function getApplicationForApprover(){
         $emp=Employee::where('user_id',auth()->user()->id)->first();
-        $appList=Application::select('applications.*','employee.full_name')
+        $appListApplication=Application::select('applications.*','employee.full_name')
             ->where('approval_id',$emp->emp_id)
             ->leftJoin('employee','employee.emp_id','applications.approval_id')
             ->get();

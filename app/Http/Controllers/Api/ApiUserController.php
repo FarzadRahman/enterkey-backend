@@ -51,9 +51,14 @@ class ApiUserController extends Controller
 //        $success = file_put_contents(public_path().'/uploads/'.$safeName, $file);
 
         $fileName=$this->base64ImgUpload($r['photo'],'profile-picture');
-        User::where('id',auth()->user()->id)->update(['profile_picture'=>$fileName]);
-        return $fileName;
-
+        //User::where('id',auth()->user()->id)->update(['profile_picture'=>$fileName]);
+        //return $fileName;
+        if ($fileName) {
+            User::where('id', auth()->user()->id)->update(['profile_picture' => $fileName]);
+            return response()->json(['status' => 200, 'message' => 'Profile picture uploaded successfully']);
+        } else {
+            return response()->json(['status' => 500, 'message' => 'Failed to upload profile picture']);
+        }
 
 
     }
