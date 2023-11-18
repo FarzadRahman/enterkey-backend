@@ -198,4 +198,64 @@ class ApiApplicationController extends Controller
             'application'=>$application
         ],201);
     }
+    public function editApplicationDetails(Request $request, $id){
+        $empId = Employee::where('user_id', auth()->user()->id)->first();
+
+        $application = Application::where('id', $id)
+            ->where('employee_id', $empId->emp_id)
+            ->first();
+
+        if (!$application){
+            return response()->json(['message' => 'Application not found'], 404);
+        }
+
+        // Update the application details if the fields are available in the request
+        if ($request->has('approval_id')) {
+            $application->approval_id = $request->approval_id;
+        }
+
+        if ($request->has('reviewer_id')) {
+            $application->reviewer_id = $request->reviewer_id;
+        }
+
+        if ($request->has('start')) {
+            $Sdate = Carbon::parse($request->start)->startOfDay();
+            $application->start_date = $Sdate;
+        }
+
+        if ($request->has('end')) {
+            $edate = Carbon::parse($request->end)->endOfDay();
+            $application->end_date = $edate;
+        }
+
+        if ($request->has('reason')) {
+            $application->reason = $request->reason;
+        }
+
+        if ($request->has('stay_location')) {
+            $application->stay_location = $request->stay_location;
+        }
+
+        if ($request->has('leave_type_id')) {
+            $application->leave_type = $request->leave_type_id;
+        }
+
+        if ($request->has('start') && $request->has('end')) {
+            $Sdate = Carbon::parse($request->start)->startOfDay();
+            $edate = Carbon::parse($request->end)->endOfDay();
+            $days = $Sdate->diffInDays($edate);
+            $total_days = $days + 1;
+            $application->applied_total_days = $total_days;
+        }
+
+        $application->status = 1;
+
+        $application->save();
+
+        return response()->json([
+            'message' => 'Application updated successfully',
+            'application' => $application
+        ], 201);
+    }
+
 }
