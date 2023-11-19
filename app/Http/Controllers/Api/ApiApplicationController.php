@@ -102,9 +102,10 @@ class ApiApplicationController extends Controller
     public function appliedList(Request $r){
 //        return auth()->user()->id;
         $emp=Employee::where('user_id',auth()->user()->id)->first();
-        $appList=Application::select('applications.*','employee.full_name')
+        $appList=Application::select('applications.*','approver.full_name','recorder.full_name as recorder_name')
             ->where('employee_id',$emp->emp_id)
-            ->leftJoin('employee','employee.emp_id','applications.approval_id')
+            ->leftJoin('employee as approver','approver.emp_id','applications.approval_id')
+            ->leftJoin('employee as recorder','recorder.emp_id','applications.reviewer_id')
             ->get();
 
         $datatables = Datatables::of($appList);
@@ -114,12 +115,15 @@ class ApiApplicationController extends Controller
 
     public function getApplicationForRecorder(){
         $emp=Employee::where('user_id',auth()->user()->id)->first();
-        $appList=Application::select('applications.*','employee.full_name')
+
+        $appList=Application::select('applications.*','approver.full_name','sender.full_name as sender_name')
             ->where('reviewer_id',$emp->emp_id)
-            ->leftJoin('employee','employee.emp_id','applications.approval_id')
+            ->leftJoin('employee as approver','approver.emp_id','applications.approval_id')
+            ->leftJoin('employee as sender','sender.emp_id','applications.employee_id')
             ->get();
 
-        return $appList;
+        $datatables = Datatables::of($appList);
+        return $datatables->make(true);
     }
 
     public function getApplicationDetails($id){
@@ -130,12 +134,18 @@ class ApiApplicationController extends Controller
 
     public function getApplicationForApprover(){
         $emp=Employee::where('user_id',auth()->user()->id)->first();
-        $appListApplication=Application::select('applications.*','employee.full_name')
+
+
+        $appList=Application::select('applications.*','sender.full_name','recorder.full_name as recorder_name')
             ->where('approval_id',$emp->emp_id)
-            ->leftJoin('employee','employee.emp_id','applications.approval_id')
+            ->leftJoin('employee as sender','sender.emp_id','applications.employee_id')
+            ->leftJoin('employee as recorder','recorder.emp_id','applications.reviewer_id')
             ->get();
 
-        return $appListApplication;
+
+
+        $datatables = Datatables::of($appList);
+        return $datatables->make(true);
     }
     public function applicationApproved(Request $request,$id){
         try {
