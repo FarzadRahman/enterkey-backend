@@ -16,7 +16,6 @@ class ApiApplicationController extends Controller
     {
         $this->middleware(['api']);
     }
-
     public function store(Request $request){
         $Sdate = Carbon::parse($request->start)->startOfDay();
         $edate = Carbon::parse($request->end)->endOfDay();

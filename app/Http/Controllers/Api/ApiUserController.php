@@ -55,7 +55,13 @@ class ApiUserController extends Controller
         //return $fileName;
         if ($fileName) {
             User::where('id', auth()->user()->id)->update(['profile_picture' => $fileName]);
-            return response()->json(['status' => 200, 'message' => 'Profile picture uploaded successfully']);
+            return response()->json(
+                [
+                    'status' => 200,
+                    'message' => 'Profile picture uploaded successfully',
+                    'profile_picture'=>$fileName
+                ]
+            );
         } else {
             return response()->json(['status' => 500, 'message' => 'Failed to upload profile picture']);
         }
@@ -66,7 +72,13 @@ class ApiUserController extends Controller
         //return $fileName;
         if ($fileName) {
             User::where('id', auth()->user()->id)->update(['signature' => $fileName]);
-            return response()->json(['status' => 200, 'message' => 'Signature uploaded successfully']);
+            return response()->json(
+                [
+                    'status' => 200,
+                    'message' => 'Signature uploaded successfully',
+                    'signature' => $fileName
+                ]
+            );
         } else {
             return response()->json(['status' => 500, 'message' => 'Failed to upload signature']);
         }
