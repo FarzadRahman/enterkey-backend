@@ -44,7 +44,7 @@ class ApiEmployeeController extends Controller
         $user->email=$request->email_address;
         $user->password=Hash::make($request->password);
         $user->company=auth()->user()->company;
-        $user->role_id = 3;
+        $user->role_id = 2;
         $user->phone = $request->phone_number;
         $user->save();
 

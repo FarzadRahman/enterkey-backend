@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Application;
+use App\Models\ApplicationPassingHistory;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
@@ -174,9 +175,20 @@ class ApiApplicationController extends Controller
             $application->approved_end_date= $application->end_date;
 
         }
+        if($request->comment){
+            $application->comment=$request->comment;
+        }
         $application->status= 2;
        // $application->company=auth()->user()->company;
         $application->save();
+        $appPassHistory=new ApplicationPassingHistory();
+        $appPassHistory->application_id=$application->id;
+        $appPassHistory->sender_id=$emp->emp_id;
+        $appPassHistory->approver_id=$request->approver_id;
+        $appPassHistory->reviewer_id=$request->reviewer_id;
+        $appPassHistory->status=1;
+
+        $appPassHistory->save();
 
         return response()->json([
             'message'=>'Application approved successfully',
@@ -202,6 +214,15 @@ class ApiApplicationController extends Controller
         }
         $application->approval_id=$request->approval_id;
         $application->save();
+
+        $appPassHistory=new ApplicationPassingHistory();
+        $appPassHistory->application_id=$application->id;
+        $appPassHistory->sender_id=$empId->emp_id;
+        $appPassHistory->approver_id=$request->approver_id;
+        $appPassHistory->reviewer_id=$request->reviewer_id;
+        $appPassHistory->status=2;
+
+        $appPassHistory->save();
         return response()->json([
             'message'=>'Application pass successfully',
             'application'=>$application
@@ -260,7 +281,26 @@ class ApiApplicationController extends Controller
         $application->status = 1;
 
         $application->save();
+        $appPassHistory=new ApplicationPassingHistory();
+        $appPassHistory->application_id=$application->id;
+        $appPassHistory->sender_id=$empId->emp_id;
+        if ($request->approver_id){
+            $appPassHistory->approver_id= $request->approver_id;
+        }
+        else
+        {
+            $appPassHistory->approver_id=$application->approver_id;
+        }
+        if ($request->reviewer_id){
+            $appPassHistory->reviewer_id= $request->reviewer_id;
+        }
+        else
+        {
+            $appPassHistory->reviewer_id=$application->reviewer_id;
+        }
+        $appPassHistory->status=1;
 
+        $appPassHistory->save();
         return response()->json([
             'message' => 'Application updated successfully',
             'application' => $application
