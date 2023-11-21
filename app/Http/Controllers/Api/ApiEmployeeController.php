@@ -38,13 +38,14 @@ class ApiEmployeeController extends Controller
             return response()->json(['errors' => $validator->errors()], 400);
         }
 
+
         $data = $validator->validated();
         $user=new User();
         $user->name=$request->full_name;
         $user->email=$request->email_address;
         $user->password=Hash::make($request->password);
         $user->company=auth()->user()->company;
-        $user->role_id = 2;
+        $user->role_id = 3;
         $user->phone = $request->phone_number;
         $user->save();
 
