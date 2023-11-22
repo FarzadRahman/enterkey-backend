@@ -128,9 +128,53 @@ class ApiApplicationController extends Controller
     }
 
     public function getApplicationDetails($id){
-        $application=Application::find($id);
+//        $application=Application::find($id);
+//        if (!$application){
+//            return response()->json(['message'=>'Application not found'],404);
+//        }
+//        $application=Application::select('applications.*','approver.full_name as approver_name','sender.full_name as sender_name','reviewer.full_name as reviewer_name')
+//            ->where('id',$id)
+//            ->leftJoin('employee as approver','approver.emp_id','applications.approval_id')
+//            ->leftJoin('employee as sender','sender.emp_id','applications.employee_id')
+//            ->leftJoin('employee as reviewer','reviewer.emp_id','applications.employee_id')
+//            ->get();
+//        return $application;
+            $application = Application::find($id);
 
-        return $application;
+            if (!$application){
+                return response()->json(['message'=>'Application not found'], 404);
+            }
+
+            $application = Application::select('applications.*')
+                ->with(
+                    [
+                        'approver',
+                        'approver.department',
+                        'approver.branch',
+                        'approver.branch.company',
+                        'approver.designation',
+                        'approver.designation.grade',
+                        'sender',
+                        'sender.department',
+                        'sender.branch',
+                        'sender.branch.company',
+                        'sender.designation',
+                        'sender.designation.grade',
+                        'reviewer',
+                        'reviewer.department',
+                        'reviewer.branch',
+                        'reviewer.branch.company',
+                        'reviewer.designation',
+                        'reviewer.designation.grade',
+                        'leaveType'
+                    ])
+                ->where('id', $id)
+                ->first();
+//        $datatables = Datatables::of($application);
+//        return $datatables->make(true);
+
+            return $application;
+
     }
 
     public function getApplicationForApprover(){
@@ -184,9 +228,9 @@ class ApiApplicationController extends Controller
         $appPassHistory=new ApplicationPassingHistory();
         $appPassHistory->application_id=$application->id;
         $appPassHistory->sender_id=$emp->emp_id;
-        $appPassHistory->approver_id=$request->approver_id;
-        $appPassHistory->reviewer_id=$request->reviewer_id;
-        $appPassHistory->status=1;
+        $appPassHistory->approver_id=$application->approver_id;
+        $appPassHistory->reviewer_id=$application->reviewer_id;
+        $appPassHistory->status=2;
 
         $appPassHistory->save();
 
