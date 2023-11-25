@@ -45,6 +45,14 @@ class ApiApplicationController extends Controller
 
         $application->save();
 
+        $history=new ApplicationPassingHistory();
+        $history->application_id=$application->id;
+        $history->sender_id= $application->employee_id;
+        $history->receiver_id= $application->reviewer_id;
+        $history->status= 1;
+        $history->save();
+
+
         return response()->json([
             'message'=>'Application submitted successfully',
             'application'=>$application
@@ -121,6 +129,9 @@ class ApiApplicationController extends Controller
             ->where('reviewer_id',$emp->emp_id)
             ->leftJoin('employee as approver','approver.emp_id','applications.approval_id')
             ->leftJoin('employee as sender','sender.emp_id','applications.employee_id')
+            ->leftJoin('application_passing_history','application_passing_history.application_id','applications.id')
+            ->where('application_passing_history.receiver_id',$emp->emp_id)
+            ->where('application_passing_history.status',1)
             ->get();
 
         $datatables = Datatables::of($appList);
@@ -185,6 +196,9 @@ class ApiApplicationController extends Controller
             ->where('approval_id',$emp->emp_id)
             ->leftJoin('employee as sender','sender.emp_id','applications.employee_id')
             ->leftJoin('employee as recorder','recorder.emp_id','applications.reviewer_id')
+            ->leftJoin('application_passing_history','application_passing_history.application_id','applications.id')
+            ->where('application_passing_history.receiver_id',$emp->emp_id)
+            ->where('application_passing_history.status',1)
             ->get();
 
 
