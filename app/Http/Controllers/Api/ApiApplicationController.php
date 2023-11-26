@@ -112,10 +112,11 @@ class ApiApplicationController extends Controller
     public function appliedList(Request $r){
 //        return auth()->user()->id;
         $emp=Employee::where('user_id',auth()->user()->id)->first();
-        $appList=Application::select('applications.*','approver.full_name','recorder.full_name as recorder_name')
+        $appList=Application::select('applications.*','approver.full_name','recorder.full_name as recorder_name','leave_status.leave_status_name')
             ->where('employee_id',$emp->emp_id)
             ->leftJoin('employee as approver','approver.emp_id','applications.approval_id')
             ->leftJoin('employee as recorder','recorder.emp_id','applications.reviewer_id')
+            ->leftJoin('leave_status','leave_status.l_stat_id','applications.status')
             ->get();
 
         $datatables = Datatables::of($appList);
@@ -255,6 +256,7 @@ class ApiApplicationController extends Controller
     }
     public function applicationPass(Request $request, $id)
     {
+
         try {
             $user = auth()->userOrFail();
         } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
@@ -270,29 +272,56 @@ class ApiApplicationController extends Controller
 
         $application = Application::find($id);
 
+
+
         if (!$application )//|| !($application->approval_id === $empId->emp_id || $application->reviewer_id === $empId->emp_id)) {
         {
             return response()->json(['message' => 'Application not found '], 404);
         }
-        ApplicationPassingHistory::where('application_id', $id)->update(['status' => 2]);
 
-        $appPassHistory = new ApplicationPassingHistory();
-        $appPassHistory->application_id = $application->id;
-        $appPassHistory->sender_id = $empId->emp_id;
-        $appPassHistory->receiver_id = $request->approver_id;
-        $appPassHistory->status = 2;
 
-        if ($request->has('comments')) {
+
+        if ($application->approval_id==$empId->emp_id){
+            //            If User is Approver
+//            return response()->json(['message' => 'I am Approver'], 201);
+            ApplicationPassingHistory::where('application_id', $id)->update(['status' => 2]);
+
+            $appPassHistory = new ApplicationPassingHistory();
+            $appPassHistory->application_id = $application->id;
+            $appPassHistory->sender_id = $empId->emp_id;
+            $appPassHistory->receiver_id = $application->employee_id;
+            $appPassHistory->status = 2;
             $appPassHistory->comments = $request->comments;
+            $appPassHistory->save();
+
+            $application->status=2;
+            $application->approved_total_days=$application->applied_total_days;
+            $application->save();
+
+
         }
 
-        $appPassHistory->save();
+        elseif ($application->reviewer_id==$empId->emp_id){
+//            If User is recorder
+//            return response()->json(['message' => 'I am recorder'], 201);
+            ApplicationPassingHistory::where('application_id', $id)->update(['status' => 2]);
+            $appPassHistory = new ApplicationPassingHistory();
+            $appPassHistory->application_id = $application->id;
+            $appPassHistory->sender_id = $empId->emp_id;
+            $appPassHistory->receiver_id = $application->approval_id;
+            $appPassHistory->status = 1;
+            $appPassHistory->comments = $request->comments;
+            $appPassHistory->save();
+
+        }
+
 
         return response()->json(['message' => 'Application pass successful'], 201);
     }
 
     public function applicationReturn(Request $request, $id)
     {
+
         $empId = Employee::where('user_id', auth()->user()->id)->first();
 
         if (!$empId) {
@@ -306,22 +335,63 @@ class ApiApplicationController extends Controller
             return response()->json(['message' => 'Application not found '], 404);
         }
 
-        // Update existing ApplicationPassingHistory records
+
+            ApplicationPassingHistory::where('application_id', $id)->update(['status' => 2]);
+
+            $appPassHistory = new ApplicationPassingHistory();
+            $appPassHistory->application_id = $application->id;
+            $appPassHistory->sender_id = $empId->emp_id;
+            $appPassHistory->receiver_id = $application->employee_id;
+            $appPassHistory->status = 1;
+            $appPassHistory->comments = $request->comments;
+            $appPassHistory->save();
+
+            $application->status=3;
+            $application->save();
+
+
+
+
+
+
+
+        return response()->json(['message' => 'Application return successfully'], 201);
+    }
+
+    public function applicationCancel(Request $request, $id)
+    {
+
+        $empId = Employee::where('user_id', auth()->user()->id)->first();
+
+        if (!$empId) {
+            return response()->json(['message' => 'Employee not found'], 404);
+        }
+
+        $application = Application::find($id);
+
+        if (!$application)// || !($application->approval_id === $empId->emp_id || $application->reviewer_id === $empId->emp_id)) {
+        {
+            return response()->json(['message' => 'Application not found '], 404);
+        }
+
+
         ApplicationPassingHistory::where('application_id', $id)->update(['status' => 2]);
 
-        // Create a new ApplicationPassingHistory record
         $appPassHistory = new ApplicationPassingHistory();
         $appPassHistory->application_id = $application->id;
         $appPassHistory->sender_id = $empId->emp_id;
         $appPassHistory->receiver_id = $application->employee_id;
-        $appPassHistory->status = 2;
-
-        // Set comments if provided in the request
-        if ($request->has('comments')) {
-            $appPassHistory->comments = $request->comments;
-        }
-
+        $appPassHistory->status = 1;
+        $appPassHistory->comments = $request->comments;
         $appPassHistory->save();
+        $application->status=4;
+        $application->save();
+
+
+
+
+
+
 
         return response()->json(['message' => 'Application return successfully'], 201);
     }
