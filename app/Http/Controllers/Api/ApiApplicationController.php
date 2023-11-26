@@ -7,6 +7,7 @@ use App\Models\Application;
 use App\Models\ApplicationPassingHistory;
 use App\Models\Employee;
 use App\Models\User;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -241,9 +242,8 @@ class ApiApplicationController extends Controller
         $application->save();
         $appPassHistory=new ApplicationPassingHistory();
         $appPassHistory->application_id=$application->id;
-        $appPassHistory->sender_id=$emp->emp_id;
-        $appPassHistory->approver_id=$application->approver_id;
-        $appPassHistory->reviewer_id=$application->reviewer_id;
+        $appPassHistory->sender_id=$application->reviewer_id;
+        $appPassHistory->receiver_id=$emp->emp_id;
         $appPassHistory->status=2;
 
         $appPassHistory->save();
@@ -253,39 +253,79 @@ class ApiApplicationController extends Controller
             'application'=>$application
         ],201);
     }
-    public function applicationPass(Request $request,$id){
+    public function applicationPass(Request $request, $id)
+    {
         try {
             $user = auth()->userOrFail();
         } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
             return response(['message' => 'Login first'], 401);
         }
-        $empId=Employee::where('user_id',auth()->user()->id)->first();
-        $application = Application::where('id', $id)
-            ->where(function ($query) use ($empId) {
-                $query->where('approval_id', $empId->emp_id)
-                    ->orWhere('reviewer_id', $empId->emp_id);
-            })
-            ->first();
 
-        if(!$application){
-            return response()->json(['message'=>'Application not found'],404);
+        $empId = Employee::where('user_id', auth()->user()->id)->first();
+
+        // Ensure Employee data is available
+        if (!$empId) {
+            return response()->json(['message' => 'Employee not found'], 404);
         }
-        $application->approval_id=$request->approval_id;
-        $application->save();
 
-        $appPassHistory=new ApplicationPassingHistory();
-        $appPassHistory->application_id=$application->id;
-        $appPassHistory->sender_id=$empId->emp_id;
-        $appPassHistory->approver_id=$request->approver_id;
-        $appPassHistory->reviewer_id=$request->reviewer_id;
-        $appPassHistory->status=2;
+        $application = Application::find($id);
+
+        if (!$application )//|| !($application->approval_id === $empId->emp_id || $application->reviewer_id === $empId->emp_id)) {
+        {
+            return response()->json(['message' => 'Application not found '], 404);
+        }
+        ApplicationPassingHistory::where('application_id', $id)->update(['status' => 2]);
+
+        $appPassHistory = new ApplicationPassingHistory();
+        $appPassHistory->application_id = $application->id;
+        $appPassHistory->sender_id = $empId->emp_id;
+        $appPassHistory->receiver_id = $request->approver_id;
+        $appPassHistory->status = 2;
+
+        if ($request->has('comments')) {
+            $appPassHistory->comments = $request->comments;
+        }
 
         $appPassHistory->save();
-        return response()->json([
-            'message'=>'Application pass successfully',
-            'application'=>$application
-        ],201);
+
+        return response()->json(['message' => 'Application pass successful'], 201);
     }
+
+    public function applicationReturn(Request $request, $id)
+    {
+        $empId = Employee::where('user_id', auth()->user()->id)->first();
+
+        if (!$empId) {
+            return response()->json(['message' => 'Employee not found'], 404);
+        }
+
+        $application = Application::find($id);
+
+        if (!$application)// || !($application->approval_id === $empId->emp_id || $application->reviewer_id === $empId->emp_id)) {
+        {
+            return response()->json(['message' => 'Application not found '], 404);
+        }
+
+        // Update existing ApplicationPassingHistory records
+        ApplicationPassingHistory::where('application_id', $id)->update(['status' => 2]);
+
+        // Create a new ApplicationPassingHistory record
+        $appPassHistory = new ApplicationPassingHistory();
+        $appPassHistory->application_id = $application->id;
+        $appPassHistory->sender_id = $empId->emp_id;
+        $appPassHistory->receiver_id = $application->employee_id;
+        $appPassHistory->status = 2;
+
+        // Set comments if provided in the request
+        if ($request->has('comments')) {
+            $appPassHistory->comments = $request->comments;
+        }
+
+        $appPassHistory->save();
+
+        return response()->json(['message' => 'Application return successfully'], 201);
+    }
+
     public function editApplicationDetails(Request $request, $id){
         $empId = Employee::where('user_id', auth()->user()->id)->first();
 
@@ -339,30 +379,41 @@ class ApiApplicationController extends Controller
         $application->status = 1;
 
         $application->save();
-        $appPassHistory=new ApplicationPassingHistory();
-        $appPassHistory->application_id=$application->id;
-        $appPassHistory->sender_id=$empId->emp_id;
-        if ($request->approver_id){
-            $appPassHistory->approver_id= $request->approver_id;
-        }
-        else
-        {
-            $appPassHistory->approver_id=$application->approver_id;
-        }
-        if ($request->reviewer_id){
-            $appPassHistory->reviewer_id= $request->reviewer_id;
-        }
-        else
-        {
-            $appPassHistory->reviewer_id=$application->reviewer_id;
-        }
-        $appPassHistory->status=1;
-
-        $appPassHistory->save();
+//        $appPassHistory=new ApplicationPassingHistory();
+//        $appPassHistory->application_id=$application->id;
+//        $appPassHistory->sender_id=$empId->emp_id;
+//        if ($request->approver_id){
+//            $appPassHistory->approver_id= $request->approver_id;
+//        }
+//        else
+//        {
+//            $appPassHistory->approver_id=$application->approver_id;
+//        }
+//        if ($request->reviewer_id){
+//            $appPassHistory->reviewer_id= $request->reviewer_id;
+//        }
+//        else
+//        {
+//            $appPassHistory->reviewer_id=$application->reviewer_id;
+//        }
+//        $appPassHistory->status=1;
+//
+//        $appPassHistory->save();
         return response()->json([
             'message' => 'Application updated successfully',
             'application' => $application
         ], 201);
+    }
+    public function applicationHistory($id){
+        $application=Application::find($id);
+        if (!$application){
+            return response()->json(['message'=>'Application not found'],404);
+        }
+        $appHistory=ApplicationPassingHistory::
+                with(['application','sender','receiver'])
+                ->where('application_id',$id)
+                ->get();
+        return $appHistory;
     }
 
 }
