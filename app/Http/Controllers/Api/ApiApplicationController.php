@@ -183,10 +183,19 @@ class ApiApplicationController extends Controller
                     ])
                 ->where('id', $id)
                 ->first();
+        $totalApprovedDays=Application::select('employee_id','approved_total_days')
+            ->where('status',2)
+            ->where('employee_id',$application->employee_id)
+            ->whereYear('end_date',Carbon::now())
+            ->sum('approved_total_days');
+        $data = [
+            'application' => $application,
+            'totalApprovedDays' => $totalApprovedDays,
+        ];
 //        $datatables = Datatables::of($application);
 //        return $datatables->make(true);
-
-            return $application;
+            return $data;
+//            return response()->json([$application,$totalApproveDate]);
 
     }
 
@@ -480,9 +489,17 @@ class ApiApplicationController extends Controller
             return response()->json(['message'=>'Application not found'],404);
         }
         $appHistory=ApplicationPassingHistory::
-                with(['application','sender','receiver'])
+                with(
+                    [
+                        'application',
+                        'sender',
+                        'sender.user',
+                        'receiver',
+                        'receiver.user'
+                    ])
                 ->where('application_id',$id)
                 ->get();
+
         return $appHistory;
     }
 
