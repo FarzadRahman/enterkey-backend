@@ -51,6 +51,7 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::post('/employee/reset/password',[ApiEmployeeController::class,'resetPassword']);
     Route::get('/employee/profile',[ApiEmployeeController::class,'profile']);
     Route::post('/employee/update/profile',[ApiEmployeeController::class,'updateProfile']);
+    Route::get('/employee/total-leave/{id}',[ApiEmployeeController::class,'totalLeave']);
 
 //    Route::post('/company',[ApiCompanyController::class,'store']);
     Route::post('/company/create',[ApiCompanyController::class,'store']);

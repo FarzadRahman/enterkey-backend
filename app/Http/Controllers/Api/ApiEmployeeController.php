@@ -3,8 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Application;
 use App\Models\Employee;
 use App\Models\User;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -241,6 +243,23 @@ class ApiEmployeeController extends Controller
             'message' => 'Profile updated successfully',
             'employee' => $employee
         ], 200);
+    }
+    public function totalLeave($id){
+        try {
+            $user = auth()->userOrFail();
+        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
+            return response(['message' => 'Login first'], 401);
+        }
+        $employee=Employee::where('emp_id',$id)->first();
+        if (!$employee){
+            return response()->json(['message'=>'Employee not found'],404);
+        }
+        $totalApprovedDays=Application::select('employee_id','approved_total_days')
+            ->where('status',2)
+            ->where('employee_id',$employee->emp_id)
+            ->whereYear('end_date',Carbon::now())
+            ->sum('approved_total_days');
+        return response()->json(['totalApprovedLeave'=>$totalApprovedDays],200);
     }
 
 
