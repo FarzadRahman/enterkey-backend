@@ -108,6 +108,7 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::post('/leave/application-approved/{id}',[ApiApplicationController::class,'applicationApproved']);
     Route::post('/leave/application-reject/{id}',[ApiApplicationController::class,'applicationCancel']);
     Route::post('/leave/application-pass/{id}',[ApiApplicationController::class,'applicationPass']);
+    Route::post('/leave/application-return/{id}',[ApiApplicationController::class,'applicationReturn']);
     Route::post('/leave/application/for-recorder',[ApiApplicationController::class,'getApplicationForRecorder']);
     Route::post('/leave/application/for-approver',[ApiApplicationController::class,'getApplicationForApprover']);
     Route::get('/leave/details/{id}',[ApiApplicationController::class,'getApplicationDetails']);
