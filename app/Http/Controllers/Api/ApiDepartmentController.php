@@ -49,7 +49,7 @@ class ApiDepartmentController extends Controller
         $department->department_name=$request->department_name;
         $department->save();
 
-        return response()->json(['message' => 'Department created successfully', 'data' => $department], 201);
+        return response()->json(['message' => 'Department updated successfully', 'data' => $department], 201);
     }
     public function destroy($id){
         $department = Department::find($id);
