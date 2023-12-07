@@ -114,4 +114,6 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::get('/leave/details/{id}',[ApiApplicationController::class,'getApplicationDetails']);
     Route::post('/leave/edit-application/{id}',[ApiApplicationController::class,'editApplicationDetails']);
     Route::get('/leave/application-history/{id}',[ApiApplicationController::class,'applicationHistory']);
+
+    Route::get('/leave/approve-count',[ApiApplicationController::class,'approveLeaveCount']);
 });

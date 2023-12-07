@@ -328,6 +328,11 @@ class ApiApplicationController extends Controller
         return response()->json(['message' => 'Application pass successful'], 201);
     }
 
+    public function approveLeaveCount(){
+        $empId = Employee::where('user_id', auth()->user()->id)->first();
+        return Application::where('employee_id',$empId->emp_id)->where('status',2)->sum('approved_total_days');
+    }
+
     public function applicationReturn(Request $request, $id)
     {
 
