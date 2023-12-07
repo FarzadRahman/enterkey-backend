@@ -51,6 +51,7 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::post('/employee/reset/password',[ApiEmployeeController::class,'resetPassword']);
     Route::get('/employee/profile',[ApiEmployeeController::class,'profile']);
     Route::post('/employee/update/profile',[ApiEmployeeController::class,'updateProfile']);
+    Route::get('/employee/total-leave/{id}',[ApiEmployeeController::class,'totalLeave']);
 
 //    Route::post('/company',[ApiCompanyController::class,'store']);
     Route::post('/company/create',[ApiCompanyController::class,'store']);
@@ -105,6 +106,7 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::get('/leave/own-application-list',[ApiApplicationController::class,'getOwnApplicationList']);
     Route::post('/leave/applied-list',[ApiApplicationController::class,'appliedList']);
     Route::post('/leave/application-approved/{id}',[ApiApplicationController::class,'applicationApproved']);
+    Route::post('/leave/application-reject/{id}',[ApiApplicationController::class,'applicationCancel']);
     Route::post('/leave/application-pass/{id}',[ApiApplicationController::class,'applicationPass']);
     Route::post('/leave/application-return/{id}',[ApiApplicationController::class,'applicationReturn']);
     Route::post('/leave/application/for-recorder',[ApiApplicationController::class,'getApplicationForRecorder']);
