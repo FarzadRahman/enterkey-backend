@@ -463,26 +463,18 @@ class ApiApplicationController extends Controller
         $application->status = 1;
 
         $application->save();
-//        $appPassHistory=new ApplicationPassingHistory();
-//        $appPassHistory->application_id=$application->id;
-//        $appPassHistory->sender_id=$empId->emp_id;
-//        if ($request->approver_id){
-//            $appPassHistory->approver_id= $request->approver_id;
-//        }
-//        else
-//        {
-//            $appPassHistory->approver_id=$application->approver_id;
-//        }
-//        if ($request->reviewer_id){
-//            $appPassHistory->reviewer_id= $request->reviewer_id;
-//        }
-//        else
-//        {
-//            $appPassHistory->reviewer_id=$application->reviewer_id;
-//        }
-//        $appPassHistory->status=1;
-//
-//        $appPassHistory->save();
+
+        ApplicationPassingHistory::where('application_id', $id)->update(['status' => 2]);
+
+        $appPassHistory = new ApplicationPassingHistory();
+        $appPassHistory->application_id = $application->id;
+        $appPassHistory->sender_id = $empId->emp_id;
+        $appPassHistory->receiver_id = $application->reviewer_id;
+        $appPassHistory->status = 1;
+        if ($request->has('comments')){
+            $appPassHistory->comments = $request->comments;
+        }
+        $appPassHistory->save();
         return response()->json([
             'message' => 'Application updated successfully',
             'application' => $application
