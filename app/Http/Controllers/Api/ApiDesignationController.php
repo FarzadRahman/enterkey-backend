@@ -30,7 +30,11 @@ class ApiDesignationController extends Controller
         $designation->desg_nm=$request->desg_nm;
         $designation->grade_id=$request->grade_id;
         $designation->save();
-
+        activity('create')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($designation)
+            ->withProperties($designation)
+            ->log(auth()->user()->name . ' created designation');
         return response()->json(['message' => 'Designation created successfully', 'data' => $designation], 201);
     }
     public function update(Request $request,$id)
@@ -53,7 +57,11 @@ class ApiDesignationController extends Controller
         $designation->desg_nm=$request->desg_nm;
         $designation->grade_id=$request->grade_id;
         $designation->save();
-
+        activity('update')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($designation)
+            ->withProperties($designation)
+            ->log(auth()->user()->name . ' updated designation');
         return response()->json(['message' => 'Designation updated successfully', 'data' => $designation], 201);
     }
     public function destroy($id){
@@ -62,6 +70,11 @@ class ApiDesignationController extends Controller
             return response()->json(['message'=>'Designation not found'],404);
         }
         $designation->delete();
+        activity('deleted')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($designation)
+            ->withProperties($designation)
+            ->log(auth()->user()->name . ' deleted designation');
         return response()->json(['message'=>'Designation deleted successfully'],200);
     }
     public function getAll(){

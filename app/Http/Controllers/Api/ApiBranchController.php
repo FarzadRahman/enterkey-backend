@@ -34,6 +34,12 @@ class ApiBranchController extends Controller
 
         $branch->save();
 
+        activity('create')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($branch)
+            ->withProperties($branch)
+            ->log(auth()->user()->name . ' created branch');
+
         return response()->json(['message' => 'Branch created successfully', 'data' => $branch], 201);
     }
     public function update(Request $request,$id){
@@ -55,7 +61,11 @@ class ApiBranchController extends Controller
         $branch->company_id=$request->company_id;
 
         $branch->save();
-
+        activity('update')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($branch)
+            ->withProperties($branch)
+            ->log(auth()->user()->name . ' updated branch');
         return response()->json(['message' => 'Branch Updated successfully', 'data' => $branch], 201);
     }
     public function getAll(){
@@ -83,7 +93,11 @@ class ApiBranchController extends Controller
         }
 
         $branch->delete();
-
+        activity('delete')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($branch)
+            ->withProperties($branch)
+            ->log(auth()->user()->name . ' deleted branch');
         return response()->json(['message' => 'Branch deleted successfully'], 200);
     }
 }

@@ -28,7 +28,11 @@ class ApiGradeController extends Controller
         $grade = new Grade();
         $grade->grade_name=$request->grade_name;
         $grade->save();
-
+        activity('create')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($grade)
+            ->withProperties($grade)
+            ->log(auth()->user()->name . ' created grade');
         return response()->json(['message' => 'Grade created successfully', 'data' => $grade], 200);
     }
     public function update(Request $request,$id)
@@ -50,7 +54,11 @@ class ApiGradeController extends Controller
         }
         $grade->grade_name=$request->grade_name;
         $grade->save();
-
+        activity('updated')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($grade)
+            ->withProperties($grade)
+            ->log(auth()->user()->name . ' updated grade');
         return response()->json(['message' => 'Grade Updated successfully', 'data' => $grade], 200);
     }
     public function destroy($id){
@@ -59,6 +67,11 @@ class ApiGradeController extends Controller
             return response()->json(['message'=>'Grade is not found'],404);
         }
         $grade->delete();
+        activity('delete')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($grade)
+            ->withProperties($grade)
+            ->log(auth()->user()->name . ' deleted grade');
         return response()->json(['message'=>'Grade deleted successfully'],200);
     }
     public function getAll(){

@@ -79,7 +79,11 @@ class ApiEmployeeController extends Controller
         $employee->signature = $request->signature;
 
         $employee->save();
-
+        activity('create')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($employee)
+            ->withProperties($employee)
+            ->log(auth()->user()->name . ' created employee');
         return response()->json(['message' => 'Employee created successfully', 'data' => $employee,'user'=>$user], 201);
     }
     public function update(Request $request, $id)
@@ -131,7 +135,11 @@ class ApiEmployeeController extends Controller
             $employee->isRecorder=0;
         }
         $employee->save();
-
+        activity('update')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($employee)
+            ->withProperties($employee)
+            ->log(auth()->user()->name . ' update employee');
         return response()->json(['message' => 'Employee updated successfully', 'data' => $employee], 200);
     }
     public function destroy($id)
@@ -143,7 +151,11 @@ class ApiEmployeeController extends Controller
         }
 
         $employee->delete();
-
+        activity('delete')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($employee)
+            ->withProperties($employee)
+            ->log(auth()->user()->name . ' deleted employee');
         return response()->json(['message' => 'Employee deleted successfully'], 200);
     }
     public function getAll(){
@@ -170,7 +182,11 @@ class ApiEmployeeController extends Controller
         }
         $user->password=Hash::make($request->password);
         $user->save();
-
+        activity('resetPass')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($user)
+            ->withProperties($user)
+            ->log(auth()->user()->name . ' reset password');
         return response()->json(['message'=>'Password reset successfully'],200);
     }
     public function profile(){
@@ -238,7 +254,11 @@ class ApiEmployeeController extends Controller
 
         $employee->save();
         $user->save();
-
+        activity('create')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($employee)
+            ->withProperties($employee)
+            ->log(auth()->user()->name . ' update profile');
         return response()->json([
             'message' => 'Profile updated successfully',
             'employee' => $employee

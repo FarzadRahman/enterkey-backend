@@ -28,7 +28,11 @@ class ApiLeaveStatusController extends Controller
         $leaveStatus = new LeaveStatus();
         $leaveStatus->leave_status_name=$request->leave_status_name;
         $leaveStatus->save();
-
+        activity('create')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($leaveStatus)
+            ->withProperties($leaveStatus)
+            ->log(auth()->user()->name . ' created leave status');
         return response()->json(['message' => 'Leave Status created successfully', 'data' => $leaveStatus], 201);
     }
     public function update(Request $request,$id)
@@ -49,7 +53,11 @@ class ApiLeaveStatusController extends Controller
 
         $leaveStatus->leave_status_name=$request->leave_status_name;
         $leaveStatus->save();
-
+        activity('update')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($leaveStatus)
+            ->withProperties($leaveStatus)
+            ->log(auth()->user()->name . ' updated leave status');
         return response()->json(['message' => 'Leave Status Updated successfully', 'data' => $leaveStatus], 201);
     }
     public function destroy($id){
@@ -58,6 +66,11 @@ class ApiLeaveStatusController extends Controller
             return response()->json(['message'=>'Leave Status is not found'],404);
         }
         $leaveStatus->delete();
+        activity('delete')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($leaveStatus)
+            ->withProperties($leaveStatus)
+            ->log(auth()->user()->name . ' delete leave status');
         return response()->json(['message'=>'Leave Status deleted Successfully'],200);
     }
     public function getAll(){

@@ -54,7 +54,14 @@ class ApiUserController extends Controller
         //User::where('id',auth()->user()->id)->update(['profile_picture'=>$fileName]);
         //return $fileName;
         if ($fileName) {
+            $userId = auth()->user()->id;
             User::where('id', auth()->user()->id)->update(['profile_picture' => $fileName]);
+            activity('update')
+                ->causedBy($userId)
+                ->performedOn(auth()->user()) // Assuming you want to log the activity on the user model
+                ->withProperties(['profile_picture' => $fileName]) // Adding profile_picture to properties
+                ->log(auth()->user()->name . ' updated profile picture');
+
             return response()->json(
                 [
                     'status' => 200,
@@ -71,7 +78,14 @@ class ApiUserController extends Controller
         //User::where('id',auth()->user()->id)->update(['profile_picture'=>$fileName]);
         //return $fileName;
         if ($fileName) {
+            $userId = auth()->user()->id;
             User::where('id', auth()->user()->id)->update(['signature' => $fileName]);
+            activity('update')
+                ->causedBy($userId)
+                ->performedOn(auth()->user()) // Assuming you want to log the activity on the user model
+                ->withProperties(['profile_picture' => $fileName]) // Adding profile_picture to properties
+                ->log(auth()->user()->name . ' updated signature');
+
             return response()->json(
                 [
                     'status' => 200,

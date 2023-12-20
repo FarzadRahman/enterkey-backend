@@ -53,7 +53,11 @@ class ApiApplicationController extends Controller
         $history->status= 1;
         $history->save();
 
-
+        activity('create')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($application)
+            ->withProperties($application)
+            ->log(auth()->user()->name . ' submit application');
         return response()->json([
             'message'=>'Application submitted successfully',
             'application'=>$application
@@ -257,7 +261,11 @@ class ApiApplicationController extends Controller
         $appPassHistory->status=2;
 
         $appPassHistory->save();
-
+        activity('approved')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($application)
+            ->withProperties($application)
+            ->log(auth()->user()->name . ' approved application');
         return response()->json([
             'message'=>'Application approved successfully',
             'application'=>$application
@@ -307,7 +315,11 @@ class ApiApplicationController extends Controller
             $application->approved_total_days=$application->applied_total_days;
             $application->save();
 
-
+            activity('pass')
+                ->causedBy(auth()->user()->id)
+                ->performedOn($application)
+                ->withProperties($application)
+                ->log(auth()->user()->name . ' pass application');
         }
 
         elseif ($application->reviewer_id==$empId->emp_id){
@@ -321,7 +333,11 @@ class ApiApplicationController extends Controller
             $appPassHistory->status = 1;
             $appPassHistory->comments = $request->comments;
             $appPassHistory->save();
-
+            activity('pass')
+                ->causedBy(auth()->user()->id)
+                ->performedOn($appPassHistory)
+                ->withProperties($appPassHistory)
+                ->log(auth()->user()->name . ' pass application');
         }
 
 
@@ -365,7 +381,11 @@ class ApiApplicationController extends Controller
 
 
 
-
+        activity('return')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($application)
+            ->withProperties($application)
+            ->log(auth()->user()->name . ' return application');
 
 
 
@@ -402,8 +422,11 @@ class ApiApplicationController extends Controller
         $application->save();
 
 
-
-
+        activity('cancel')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($application)
+            ->withProperties($application)
+            ->log(auth()->user()->name . ' reject application');
 
 
 
@@ -475,6 +498,11 @@ class ApiApplicationController extends Controller
             $appPassHistory->comments = $request->comments;
         }
         $appPassHistory->save();
+        activity('update')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($application)
+            ->withProperties($application)
+            ->log(auth()->user()->name . ' updated application');
         return response()->json([
             'message' => 'Application updated successfully',
             'application' => $application

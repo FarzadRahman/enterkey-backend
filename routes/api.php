@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\ActivityLogController;
 use App\Http\Controllers\Api\ApiApplicationController;
 use App\Http\Controllers\Api\ApiBranchController;
 use App\Http\Controllers\Api\ApiCompanyController;
@@ -116,4 +117,7 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::get('/leave/application-history/{id}',[ApiApplicationController::class,'applicationHistory']);
 
     Route::get('/leave/approve-count',[ApiApplicationController::class,'approveLeaveCount']);
+
+    /*<-----------------------------------Activity Log ------------------------------------------>*/
+    Route::get('/activity-log',[ActivityLogController::class,'getAll']);
 });
