@@ -99,9 +99,7 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::post('/role/update/{id}',[ApiRoleController::class,'update']);
     Route::post('/role/delete/{id}',[ApiRoleController::class,'destroy']);
     Route::get('/role',[ApiRoleController::class,'getAll']);
-
     Route::post('/leave/create',[ApiApplicationController::class,'store']);
-
     Route::get('/leave/employee-list',[ApiApplicationController::class,'getLeaveEmployee']);
     Route::get('/leave/recorder-list',[ApiApplicationController::class,'getRecorderEmployee']);
     Route::get('/leave/application-list',[ApiApplicationController::class,'getApplicationList']);
@@ -116,7 +114,6 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::get('/leave/details/{id}',[ApiApplicationController::class,'getApplicationDetails']);
     Route::post('/leave/edit-application/{id}',[ApiApplicationController::class,'editApplicationDetails']);
     Route::get('/leave/application-history/{id}',[ApiApplicationController::class,'applicationHistory']);
-
     Route::get('/leave/approve-count',[ApiApplicationController::class,'approveLeaveCount']);
 
     /*<-----------------------------------Activity Log ------------------------------------------>*/

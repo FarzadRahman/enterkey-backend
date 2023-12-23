@@ -79,7 +79,7 @@ class ApiLeaveTypeController extends Controller
 //        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
 //            return response(['message' => 'Login first'], 401);
 //        }
-        $leaveType=LeaveType::paginate(10);
+        $leaveType=LeaveType::get();
         return $leaveType;
     }
 }
