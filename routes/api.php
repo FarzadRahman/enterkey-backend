@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\ApiEmployeeController;
 use App\Http\Controllers\Api\ApiGradeController;
 use App\Http\Controllers\Api\ApiLeaveStatusController;
 use App\Http\Controllers\Api\ApiLeaveTypeController;
+use App\Http\Controllers\Api\ApiReportController;
 use App\Http\Controllers\Api\ApiRoleController;
 use App\Http\Controllers\Api\ApiUserController;
 use Illuminate\Http\Request;
@@ -120,4 +121,8 @@ Route::group(['middleware'=>'api'],function($routes){
 
     /*<-----------------------------------Activity Log ------------------------------------------>*/
     Route::get('/activity-log',[ActivityLogController::class,'getAll']);
+
+    /*<-----------------------------------Report ------------------------------------------>*/
+    Route::get('/leave/report', [ApiReportController::class, 'data']);
+
 });
