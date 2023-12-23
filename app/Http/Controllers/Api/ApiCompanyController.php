@@ -122,6 +122,7 @@ class ApiCompanyController extends Controller
 
 
     public function getAll(){
+
         try {
             $user = auth()->userOrFail();
         } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {

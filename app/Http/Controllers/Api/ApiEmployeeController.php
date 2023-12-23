@@ -158,15 +158,26 @@ class ApiEmployeeController extends Controller
             ->log(auth()->user()->name . ' deleted employee');
         return response()->json(['message' => 'Employee deleted successfully'], 200);
     }
-    public function getAll(){
+    public function getAll(Request $r){
 //        $employee=Employee::get();
   //      return $employee;
+//        return $r;
         try {
             $user = auth()->userOrFail();
         } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
             return response(['message' => 'Login first'], 401);
         }
-        $employees = Employee::with(['designation', 'branch', 'department'])->paginate(10);
+        $employees = Employee::with(['designation', 'branch', 'department']);
+
+//
+        if($r->isPaginate=="false"){
+
+            $employees=$employees->get();
+        }
+        else{
+            $employees=$employees->paginate(10);
+        }
+
         return $employees;
     }
     public function resetPassword(Request $request){

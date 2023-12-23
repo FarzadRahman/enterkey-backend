@@ -120,6 +120,6 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::get('/activity-log',[ActivityLogController::class,'getAll']);
 
     /*<-----------------------------------Report ------------------------------------------>*/
-    Route::get('/leave/advance-report', [ApiReportController::class, 'data']);
+    Route::post('/leave/advance-report', [ApiReportController::class, 'data']);
 
 });

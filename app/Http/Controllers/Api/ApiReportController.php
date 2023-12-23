@@ -14,7 +14,8 @@ class ApiReportController extends Controller
     }
     public function data(Request $r)
     {
-
+//        return $r;
+//
       $application=Application::with
       (
           [
@@ -24,7 +25,19 @@ class ApiReportController extends Controller
               'leaveType',
               'leaveStatus'
           ]
-      )->paginate(10);
+      );
+
+      if($r->leaveType){
+          $application=$application->where('leave_type',$r->leaveType);
+      }
+      if($r->selectedEmp){
+          $application=$application->where('employee_id',$r->selectedEmp);
+      }
+
+      if($r->leaveStartDate){ $application=$application->where('end_date','>=',$r->leaveStartDate);}
+      if($r->leaveEndDate){ $application=$application->where('start_date','<=',$r->leaveEndDate);}
+
+      $application=$application->paginate(10);
       return $application;
     }
 
