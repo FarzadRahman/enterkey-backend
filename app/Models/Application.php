@@ -22,4 +22,7 @@ class Application extends Model
     public function leaveType() {
         return $this->belongsTo(LeaveType::class, 'leave_type', 'l_type_id');
     }
+    public function leaveStatus() {
+        return $this->belongsTo(LeaveStatus::class, 'status', 'l_stat_id');
+    }
 }
