@@ -52,6 +52,11 @@ class ApiCompanyController extends Controller
         $company->company_tin=$request->company_tin;
         $company->save();
 
+        activity('create')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($company)
+            ->withProperties($company)
+            ->log(auth()->user()->name . ' created company');
         return response()->json(['message' => 'Company created successfully', 'data' => $company], 201);
     }
     public function update(Request $request, $id)
@@ -85,7 +90,11 @@ class ApiCompanyController extends Controller
         $company->company_bin=$request->company_bin;
         $company->company_tin=$request->company_tin;
         $company->save();
-
+        activity('update')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($company)
+            ->withProperties($company)
+            ->log(auth()->user()->name . ' updated company');
         return response()->json(['message' => 'Company updated successfully', 'data' => $company], 200);
     }
     public function destroy($id)
@@ -102,6 +111,11 @@ class ApiCompanyController extends Controller
         }
 
         $company->delete();
+        activity('delete')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($company)
+            ->withProperties($company)
+            ->log(auth()->user()->name . ' delete company');
 
         return response()->json(['message' => 'Company deleted successfully'], 200);
     }

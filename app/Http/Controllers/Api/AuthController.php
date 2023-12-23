@@ -29,6 +29,11 @@ class AuthController extends Controller
         if(Hash::check($request->oldPassword, $user->password)){
             $user->password=Hash::make($request->password);
             $user->save();
+            activity('update')
+                ->causedBy(auth()->user()->id)
+                ->performedOn($user)
+                ->withProperties($user)
+                ->log(auth()->user()->name . ' change password');
 
             return response()->json(['message'=>'Password Changed Successfully'],200);
         }
@@ -67,7 +72,11 @@ class AuthController extends Controller
         $user->company=$request->company_id;
         $user->save();
 
-
+        activity('create')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($user)
+            ->withProperties($user)
+            ->log(auth()->user()->name . ' created user');
 
         return response()->json([
             'message'=>'registered',

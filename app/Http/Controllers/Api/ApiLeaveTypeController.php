@@ -28,6 +28,11 @@ class ApiLeaveTypeController extends Controller
         $leaveType =new LeaveType();
         $leaveType->leave_type_name=$request->leave_type_name;
         $leaveType->save();
+        activity('create')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($leaveType)
+            ->withProperties($leaveType)
+            ->log(auth()->user()->name . ' created leave type');
         return response()->json(['message' => 'Leave Type created successfully', 'data' => $leaveType], 201);
     }
     public function update(Request $request,$id)
@@ -48,7 +53,11 @@ class ApiLeaveTypeController extends Controller
 
         $leaveType->leave_type_name=$request->leave_type_name;
         $leaveType->save();
-
+        activity('update')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($leaveType)
+            ->withProperties($leaveType)
+            ->log(auth()->user()->name . ' updated leave type');
         return response()->json(['message' => 'Leave Type updated successfully', 'data' => $leaveType], 201);
     }
     public function destroy($id){
@@ -57,6 +66,11 @@ class ApiLeaveTypeController extends Controller
             return response()->json(['message'=>'Leave type not found'],404);
         }
         $leaveType->delete();
+        activity('delete')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($leaveType)
+            ->withProperties($leaveType)
+            ->log(auth()->user()->name . ' delete leave type');
         return response()->json(['message'=>'Leave type deleted successfully'],200);
     }
     public function getAll(){

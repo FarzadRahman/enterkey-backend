@@ -28,7 +28,11 @@ class ApiDepartmentController extends Controller
         $department =new Department();
         $department->department_name=$request->department_name;
         $department->save();
-
+        activity('create')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($department)
+            ->withProperties($department)
+            ->log(auth()->user()->name . ' created department');
         return response()->json(['message' => 'Department created successfully', 'data' => $department], 201);
     }
     public function update(Request $request,$id)
@@ -48,7 +52,11 @@ class ApiDepartmentController extends Controller
         }
         $department->department_name=$request->department_name;
         $department->save();
-
+        activity('update')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($department)
+            ->withProperties($department)
+            ->log(auth()->user()->name . ' updated department');
         return response()->json(['message' => 'Department updated successfully', 'data' => $department], 201);
     }
     public function destroy($id){
@@ -59,7 +67,11 @@ class ApiDepartmentController extends Controller
         }
 
         $department->delete();
-
+        activity('delete')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($department)
+            ->withProperties($department)
+            ->log(auth()->user()->name . ' deleted department');
         return response()->json(['message' => 'Department deleted successfully'], 200);
 
     }
