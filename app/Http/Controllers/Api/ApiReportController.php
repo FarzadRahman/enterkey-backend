@@ -18,8 +18,8 @@ class ApiReportController extends Controller
       $application=Application::with
       (
           [
-              'sender','sender.user',
-              'approver','approver.user',
+              'sender','sender.user','sender.designation',
+              'approver','approver.user','approver.designation',
               'reviewer','reviewer.user',
               'leaveType',
               'leaveStatus'
