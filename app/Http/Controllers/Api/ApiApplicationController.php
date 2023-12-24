@@ -244,58 +244,65 @@ class ApiApplicationController extends Controller
         $datatables = Datatables::of($appList);
         return $datatables->make(true);
     }
-    public function applicationApproved(Request $request,$id){
+    public function applicationApproved(Request $request, $id){
         try {
             $user = auth()->userOrFail();
         } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
             return response(['message' => 'Login first'], 401);
         }
-        $emp=Employee::where('user_id',auth()->user()->id)
-            ->where('company',auth()->user()->company)->first();
 
-        $application=Application::where('approval_id',$emp->id)->find($id);
-//        $appid = Application::select('employee_id')->where('approval_id',$emp->id)->find($id);
+        $emp = Employee::where('user_id', auth()->user()->id)->first();
 
-        // $application->approved_total_days= $application->applied_total_days;
-        // $application->approved_start_date= $application->start_date;
-        // $application->approved_end_date= $application->end_date;
-        if($application->reviewer_start_date){
-            $application->approved_total_days= $application->review_total_days;
-            $application->approved_start_date= $application->reviewer_start_date;
-            $application->approved_end_date= $application->reviewer_end_date;
+        // Find the application
+        $application = Application::where('approval_id', $emp->emp_id)->where('id',$id)->first();
+        if (!$application) {
+            return response()->json(['message' => 'Application not found'], 404);
         }
-        else
-        {
-            $application->approved_total_days= $application->applied_total_days;
-            $application->approved_start_date= $application->start_date;
-            $application->approved_end_date= $application->end_date;
 
+        // Set approved dates and total days based on reviewer start date
+        if ($application->reviewer_start_date) {
+            $application->approved_total_days = $application->review_total_days;
+            $application->approved_start_date = $application->reviewer_start_date;
+            $application->approved_end_date = $application->reviewer_end_date;
+        } else {
+            $application->approved_total_days = $application->applied_total_days;
+            $application->approved_start_date = $application->start_date;
+            $application->approved_end_date = $application->end_date;
         }
-        if($request->comment){
-            $application->comment=$request->comment;
+
+        // Set comments if provided
+        if ($request->comments) {
+            $application->comment = $request->comments;
         }
-        $application->status= 2;
-       // $application->company=auth()->user()->company;
+
+        // Update application status and save changes
+        $application->status = 2;
         $application->save();
+
+        // Update ApplicationPassingHistory
         ApplicationPassingHistory::where('application_id', $id)->update(['status' => 2]);
 
-        $appPassHistory=new ApplicationPassingHistory();
-        $appPassHistory->application_id=$application->id;
-        $appPassHistory->sender_id=$application->reviewer_id;
-        $appPassHistory->receiver_id=$emp->emp_id;
-        $appPassHistory->status=2;
-
+        $appPassHistory = new ApplicationPassingHistory();
+        $appPassHistory->application_id = $application->id;
+        $appPassHistory->sender_id = $application->reviewer_id;
+        $appPassHistory->receiver_id = $emp->emp_id;
+        $appPassHistory->comments = $request->comments;
+        $appPassHistory->status = 2;
         $appPassHistory->save();
+
+        // Log the approval action
         activity('approved')
             ->causedBy(auth()->user()->id)
             ->performedOn($application)
             ->withProperties($application)
             ->log(auth()->user()->name . ' approved application');
+
         return response()->json([
-            'message'=>'Application approved successfully',
-            'application'=>$application
-        ],201);
+            'message' => 'Application approved successfully',
+            'application' => $application
+        ], 201);
     }
+
     public function applicationPass(Request $request, $id)
     {
 
@@ -507,31 +514,47 @@ class ApiApplicationController extends Controller
             $total_days = $days + 1;
             $application->applied_total_days = $total_days;
         }
-
-        $application->status = 1;
-
-        $application->save();
-
-        ApplicationPassingHistory::where('application_id', $id)->update(['status' => 2]);
-
-        $appPassHistory = new ApplicationPassingHistory();
-        $appPassHistory->application_id = $application->id;
-        $appPassHistory->sender_id = $empId->emp_id;
-        $appPassHistory->receiver_id = $application->reviewer_id;
-        $appPassHistory->status = 1;
-        if ($request->has('comments')){
-            $appPassHistory->comments = $request->comments;
+        $employee=Employee::where('user_id',auth()->user()->id)->first();
+        if (!$employee){
+            return response()->json(['message'=>'Employee not found'],404);
         }
-        $appPassHistory->save();
-        activity('update')
-            ->causedBy(auth()->user()->id)
-            ->performedOn($application)
-            ->withProperties($application)
-            ->log(auth()->user()->name . ' updated application');
-        return response()->json([
-            'message' => 'Application updated successfully',
-            'application' => $application
-        ], 201);
+        $totalApprovedDays=Application::select('employee_id','approved_total_days')
+            ->where('status',2)
+            ->where('employee_id',$employee->emp_id)
+            ->whereYear('end_date',Carbon::now())
+            ->sum('approved_total_days');
+        if($request->leave_type_id==1 && $totalApprovedDays>=20){
+            return response()->json(['message'=>'You have reached the maximum allowable leave duration of 20 days per year.','status'=>1],201);
+        }
+        if($request->leave_type_id==1 && $total_days>20){
+            return response()->json(['message'=>'Leave duration cannot exceed 20 days','status'=>1],201);
+        }
+        else{
+            $application->status = 1;
+
+            $application->save();
+
+            ApplicationPassingHistory::where('application_id', $id)->update(['status' => 2]);
+
+            $appPassHistory = new ApplicationPassingHistory();
+            $appPassHistory->application_id = $application->id;
+            $appPassHistory->sender_id = $empId->emp_id;
+            $appPassHistory->receiver_id = $application->reviewer_id;
+            $appPassHistory->status = 1;
+            if ($request->has('comments')){
+                $appPassHistory->comments = $request->comments;
+            }
+            $appPassHistory->save();
+            activity('update')
+                ->causedBy(auth()->user()->id)
+                ->performedOn($application)
+                ->withProperties($application)
+                ->log(auth()->user()->name . ' updated application');
+            return response()->json([
+                'message' => 'Application updated successfully',
+                'application' => $application
+            ], 201);
+        }
     }
     public function applicationHistory($id){
         $application=Application::find($id);
