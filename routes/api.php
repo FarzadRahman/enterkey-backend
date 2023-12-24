@@ -54,6 +54,8 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::get('/employee/profile',[ApiEmployeeController::class,'profile']);
     Route::post('/employee/update/profile',[ApiEmployeeController::class,'updateProfile']);
     Route::get('/employee/total-leave/{id}',[ApiEmployeeController::class,'totalLeave']);
+    Route::get('/employee/total-casual-leave/{id}',[ApiEmployeeController::class,'employeeTotalCasualLeave']);
+    Route::get('/employee/details/{id}',[ApiEmployeeController::class,'getEmployeeDetails']);
 
 //    Route::post('/company',[ApiCompanyController::class,'store']);
     Route::post('/company/create',[ApiCompanyController::class,'store']);
@@ -121,5 +123,5 @@ Route::group(['middleware'=>'api'],function($routes){
 
     /*<-----------------------------------Report ------------------------------------------>*/
     Route::post('/leave/advance-report', [ApiReportController::class, 'data']);
-
+    Route::post('/leave/individual-report/{id}',[ApiReportController::class,'individualData']);
 });

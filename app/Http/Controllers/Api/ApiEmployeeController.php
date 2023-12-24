@@ -292,6 +292,44 @@ class ApiEmployeeController extends Controller
             ->sum('approved_total_days');
         return response()->json(['totalApprovedLeave'=>$totalApprovedDays],200);
     }
+    public function getEmployeeDetails($id){
+        try {
+            $user = auth()->userOrFail();
+        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
+            return response(['message' => 'Login first'], 401);
+        }
+        $employee =Employee::
+        with(
+                [
+                    'designation', 'branch', 'department','user','branch.company'
+                ]
+             )
+            ->where('emp_id',$id)
+            ->first();
+        return $employee;
+    }
+    public function employeeTotalCasualLeave($id){
+        try {
+            $user = auth()->userOrFail();
+        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
+            return response(['message' => 'Login first'], 401);
+        }
+        $employee=Employee::where('emp_id',$id)->first();
+        if (!$employee){
+            return response()->json(['message'=>'Employee not found'],404);
+        }
+        $totalApprovedDays=Application::select('employee_id','approved_total_days')
+            ->where('status',2)
+            ->where('leave_type',1)
+            ->where('employee_id',$employee->emp_id)
+            ->whereYear('end_date',Carbon::now())
+            ->sum('approved_total_days');
+        $remainingLeave=20-$totalApprovedDays;
+        if($remainingLeave<0){
+            return response()->json(['message'=>'invalid leave'],200);
+        }
 
+        return response()->json(['totalApprovedLeave'=>$totalApprovedDays,'remainingLeave'=>$remainingLeave],200);
+    }
 
 }

@@ -40,5 +40,32 @@ class ApiReportController extends Controller
       $application=$application->paginate(10);
       return $application;
     }
+    public function individualData(Request $r,$id)
+    {
+//        return $r;
+//
+        $application=Application::with
+        (
+            [
+                'sender','sender.user','sender.designation',
+                'approver','approver.user','approver.designation',
+                'reviewer','reviewer.user',
+                'leaveType',
+                'leaveStatus'
+            ]
+        );
 
+        if($r->leaveType){
+            $application=$application->where('leave_type',$r->leaveType);
+        }
+        if($r->selectedEmp){
+            $application=$application->where('employee_id',$r->selectedEmp);
+        }
+
+        if($r->leaveStartDate){ $application=$application->where('start_date','>=',$r->leaveStartDate);}
+        if($r->leaveEndDate){ $application=$application->where('end_date','<=',$r->leaveEndDate);}
+
+        $application=$application->where('employee_id',$id)->paginate(10);
+        return $application;
+    }
 }
