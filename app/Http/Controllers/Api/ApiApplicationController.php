@@ -189,18 +189,21 @@ class ApiApplicationController extends Controller
                 ->with(
                     [
                         'approver',
+                        'approver.user',
                         'approver.department',
                         'approver.branch',
                         'approver.branch.company',
                         'approver.designation',
                         'approver.designation.grade',
                         'sender',
+                        'sender.user',
                         'sender.department',
                         'sender.branch',
                         'sender.branch.company',
                         'sender.designation',
                         'sender.designation.grade',
                         'reviewer',
+                        'reviewer.user',
                         'reviewer.department',
                         'reviewer.branch',
                         'reviewer.branch.company',
@@ -210,11 +213,22 @@ class ApiApplicationController extends Controller
                     ])
                 ->where('id', $id)
                 ->first();
-        $totalApprovedDays=Application::select('employee_id','approved_total_days')
-            ->where('status',2)
-            ->where('employee_id',$application->employee_id)
-            ->whereYear('end_date',Carbon::now())
-            ->sum('approved_total_days');
+            if($application->leave_type===1){
+                $totalApprovedDays=Application::select('employee_id','approved_total_days')
+                    ->where('status',2)
+                    ->where('leave_type',1)
+                    ->where('employee_id',$application->employee_id)
+                    ->whereYear('end_date',Carbon::now())
+                    ->sum('approved_total_days');
+            }
+            else{
+                $totalApprovedDays=Application::select('employee_id','approved_total_days')
+                    ->where('status',2)
+                    ->where('employee_id',$application->employee_id)
+                    ->whereYear('end_date',Carbon::now())
+                    ->sum('approved_total_days');
+            }
+
         $data = [
             'application' => $application,
             'totalApprovedDays' => $totalApprovedDays,

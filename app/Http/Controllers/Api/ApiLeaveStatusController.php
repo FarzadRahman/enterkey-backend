@@ -79,7 +79,7 @@ class ApiLeaveStatusController extends Controller
         } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
             return response(['message' => 'Login first'], 401);
         }
-        $leaveStatus=LeaveStatus::paginate(10);
+        $leaveStatus=LeaveStatus::get();
         return $leaveStatus;
     }
 
