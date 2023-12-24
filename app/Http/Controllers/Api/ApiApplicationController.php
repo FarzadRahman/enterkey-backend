@@ -19,49 +19,72 @@ class ApiApplicationController extends Controller
         $this->middleware(['api']);
     }
     public function store(Request $request){
+        try {
+            $user = auth()->userOrFail();
+        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
+            return response(['message' => 'Login first'], 401);
+        }
         $Sdate = Carbon::parse($request->start)->startOfDay();
         $edate = Carbon::parse($request->end)->endOfDay();
         $days = $Sdate->diffInDays($edate);
         $total_days = $days + 1;
-
-        $emp=Employee::where('user_id',auth()->user()->id)->first();
+        $employee=Employee::where('user_id',auth()->user()->id)->first();
+        if (!$employee){
+            return response()->json(['message'=>'Employee not found'],404);
+        }
+        $totalApprovedDays=Application::select('employee_id','approved_total_days')
+            ->where('status',2)
+            ->where('employee_id',$employee->emp_id)
+            ->whereYear('end_date',Carbon::now())
+            ->sum('approved_total_days');
+        if($request->leave_type_id==1 && $totalApprovedDays>=20){
+            return response()->json(['message'=>'You have reached the maximum allowable leave duration of 20 days per year.','status'=>1],201);
+        }
+        if($request->leave_type_id==1 && $total_days>20){
+           return response()->json(['message'=>'Leave duration cannot exceed 20 days','status'=>1],201);
+        }
+        else{
+            $emp=Employee::where('user_id',auth()->user()->id)->first();
 
 //        $leave=Application::where('employee_id',$request->employee_id)->where('start',$request->start)->where('end',$request->end)->first();
-        if ($request->end) {
-            $endDate = $request->end;
-        } else {
-            $endDate = $request->start;
+            if ($request->end) {
+                $endDate = $request->end;
+            } else {
+                $endDate = $request->start;
+            }
+            $application = new Application();
+            $application->approval_id=$request->approval_id;
+            $application->reviewer_id=$request->reviewer_id;
+            $application->employee_id=$emp->emp_id;
+            $application->start_date=$request->start;
+            $application->end_date=$endDate;
+            $application->applied_total_days=$total_days;
+            $application->reason=$request->reason;
+            $application->stay_location=$request->stay_location;
+            $application->leave_type=$request->leave_type_id;
+            $application->status=1;
+
+            $application->save();
+
+            $history=new ApplicationPassingHistory();
+            $history->application_id=$application->id;
+            $history->sender_id= $application->employee_id;
+            $history->receiver_id= $application->reviewer_id;
+            $history->status= 1;
+            $history->save();
+
+            activity('create')
+                ->causedBy(auth()->user()->id)
+                ->performedOn($application)
+                ->withProperties($application)
+                ->log(auth()->user()->name . ' submit application');
+            return response()->json([
+                'message'=>'Application submitted successfully',
+                'application'=>$application
+            ],201);
         }
-        $application = new Application();
-        $application->approval_id=$request->approval_id;
-        $application->reviewer_id=$request->reviewer_id;
-        $application->employee_id=$emp->emp_id;
-        $application->start_date=$request->start;
-        $application->end_date=$endDate;
-        $application->applied_total_days=$total_days;
-        $application->reason=$request->reason;
-        $application->stay_location=$request->stay_location;
-        $application->leave_type=$request->leave_type_id;
-        $application->status=1;
+            //return response()->json(['message'=>'another leave'],201);
 
-        $application->save();
-
-        $history=new ApplicationPassingHistory();
-        $history->application_id=$application->id;
-        $history->sender_id= $application->employee_id;
-        $history->receiver_id= $application->reviewer_id;
-        $history->status= 1;
-        $history->save();
-
-        activity('create')
-            ->causedBy(auth()->user()->id)
-            ->performedOn($application)
-            ->withProperties($application)
-            ->log(auth()->user()->name . ' submit application');
-        return response()->json([
-            'message'=>'Application submitted successfully',
-            'application'=>$application
-        ],201);
     }
     public function getLeaveEmployee(){
         try {
@@ -254,6 +277,8 @@ class ApiApplicationController extends Controller
         $application->status= 2;
        // $application->company=auth()->user()->company;
         $application->save();
+        ApplicationPassingHistory::where('application_id', $id)->update(['status' => 2]);
+
         $appPassHistory=new ApplicationPassingHistory();
         $appPassHistory->application_id=$application->id;
         $appPassHistory->sender_id=$application->reviewer_id;

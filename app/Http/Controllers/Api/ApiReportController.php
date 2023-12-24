@@ -34,8 +34,8 @@ class ApiReportController extends Controller
           $application=$application->where('employee_id',$r->selectedEmp);
       }
 
-      if($r->leaveStartDate){ $application=$application->where('end_date','>=',$r->leaveStartDate);}
-      if($r->leaveEndDate){ $application=$application->where('start_date','<=',$r->leaveEndDate);}
+      if($r->leaveStartDate){ $application=$application->where('start_date','>=',$r->leaveStartDate);}
+      if($r->leaveEndDate){ $application=$application->where('end_date','<=',$r->leaveEndDate);}
 
       $application=$application->paginate(10);
       return $application;
