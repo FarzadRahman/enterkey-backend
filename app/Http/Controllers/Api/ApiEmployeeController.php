@@ -119,7 +119,6 @@ class ApiEmployeeController extends Controller
         $employee->email_address = $request->email_address;
         $employee->office_id = $request->office_id;
         $employee->branch_id = $request->branch_id;
-        $employee->user_id = $request->user_id;
         $employee->designation_id = $request->designation_id;
         $employee->department_id = $request->department_id;
         if(isset($request->isApprover) && $request->isApprover){
@@ -167,7 +166,13 @@ class ApiEmployeeController extends Controller
         } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
             return response(['message' => 'Login first'], 401);
         }
-        $employees = Employee::with(['designation', 'branch', 'department']);
+        $employees = Employee::with(['designation', 'branch', 'department'])
+            ->leftJoin('users','users.id','employee.user_id');
+
+
+        if(auth()->user()->role !=1){
+            $employees= $employees->where('users.company',auth()->user()->company);
+        }
 
 //
         if($r->isPaginate=="false"){
