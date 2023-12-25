@@ -476,7 +476,7 @@ class ApiApplicationController extends Controller
 
 
 
-        return response()->json(['message' => 'Application return successfully'], 201);
+        return response()->json(['message' => 'Application reject successfully'], 201);
     }
 
     public function editApplicationDetails(Request $request, $id){
