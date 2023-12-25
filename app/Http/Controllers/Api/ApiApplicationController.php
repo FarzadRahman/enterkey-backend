@@ -273,15 +273,21 @@ class ApiApplicationController extends Controller
             return response()->json(['message' => 'Application not found'], 404);
         }
 
-        // Set approved dates and total days based on reviewer start date
-        if ($application->reviewer_start_date) {
-            $application->approved_total_days = $application->review_total_days;
-            $application->approved_start_date = $application->reviewer_start_date;
-            $application->approved_end_date = $application->reviewer_end_date;
-        } else {
-            $application->approved_total_days = $application->applied_total_days;
-            $application->approved_start_date = $application->start_date;
-            $application->approved_end_date = $application->end_date;
+        if($request->start){
+            $application->approved_start_date=$request->start;
+            $application->approved_end_date=$request->end;
+            $application->approved_total_days=$request->approved_total_days;
+        }
+        else{
+            if ($application->reviewer_start_date) {
+                $application->approved_total_days = $application->review_total_days;
+                $application->approved_start_date = $application->reviewer_start_date;
+                $application->approved_end_date = $application->reviewer_end_date;
+            } else {
+                $application->approved_total_days = $application->applied_total_days;
+                $application->approved_start_date = $application->start_date;
+                $application->approved_end_date = $application->end_date;
+            }
         }
 
         // Set comments if provided
@@ -298,8 +304,8 @@ class ApiApplicationController extends Controller
 
         $appPassHistory = new ApplicationPassingHistory();
         $appPassHistory->application_id = $application->id;
-        $appPassHistory->sender_id = $application->reviewer_id;
-        $appPassHistory->receiver_id = $emp->emp_id;
+        $appPassHistory->sender_id = $emp->emp_id;
+        $appPassHistory->receiver_id = $application->employee_id;
         $appPassHistory->comments = $request->comments;
         $appPassHistory->status = 2;
         $appPassHistory->save();
@@ -357,8 +363,17 @@ class ApiApplicationController extends Controller
             $appPassHistory->comments = $request->comments;
             $appPassHistory->save();
 
+            if($request->start){
+                $application->approved_start_date=$request->start;
+                $application->approved_end_date=$request->end;
+                $application->approved_total_days=$request->approved_total_days;
+            }
+            else{
+                $application->approved_start_date=$application->start_date;
+                $application->approved_end_date=$application->end_date;
+                $application->approved_total_days=$application->applied_total_days;
+            }
             $application->status=2;
-            $application->approved_total_days=$application->applied_total_days;
             $application->save();
 
             activity('pass')
@@ -379,6 +394,12 @@ class ApiApplicationController extends Controller
             $appPassHistory->status = 1;
             $appPassHistory->comments = $request->comments;
             $appPassHistory->save();
+            if($request->start){
+                $application->reviewer_start_date=$request->start;
+                $application->reviewer_end_date = $request->end;
+                $application->review_total_days=$request->approved_total_days;
+                $application->save();
+            }
             activity('pass')
                 ->causedBy(auth()->user()->id)
                 ->performedOn($appPassHistory)
