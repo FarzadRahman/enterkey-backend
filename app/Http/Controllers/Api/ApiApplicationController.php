@@ -601,13 +601,20 @@ class ApiApplicationController extends Controller
                     [
                         'application',
                         'sender',
+                        'sender.designation',
+                        'sender.branch',
+                        'sender.branch.company',
+                        'sender.department',
                         'sender.user',
                         'receiver',
+                        'receiver.designation',
+                        'receiver.branch',
+                        'receiver.branch.company',
+                        'receiver.department',
                         'receiver.user'
                     ])
                 ->where('application_id',$id)
                 ->get();
-
         return $appHistory;
     }
 

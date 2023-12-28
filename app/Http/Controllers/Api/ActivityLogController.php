@@ -17,7 +17,14 @@ class ActivityLogController extends Controller
         if(auth()->user()->role_id>1){
             return response()->json(['message'=>'Access denied'],403);
         }
-        $activityLog=ActivityLog::all();
+        $activityLog=ActivityLog::with(
+                [
+                    'user',
+                    'user.employee.designation',
+                    'user.employee.department',
+                    'user.employee.branch',
+                    'user.employee.branch.company'
+                ])->get();
        return response()->json($activityLog);
     }
 }

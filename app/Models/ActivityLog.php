@@ -9,4 +9,8 @@ class ActivityLog extends Model
 {
     use HasFactory;
     public $table='activity_log';
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'causer_id','id');
+    }
 }
