@@ -8,6 +8,7 @@ use App\Models\ApplicationPassingHistory;
 use App\Models\Employee;
 use App\Models\User;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -410,10 +411,34 @@ class ApiApplicationController extends Controller
 
         return response()->json(['message' => 'Application pass successful'], 201);
     }
-
     public function approveLeaveCount(){
         $empId = Employee::where('user_id', auth()->user()->id)->first();
         return Application::where('employee_id',$empId->emp_id)->where('status',2)->sum('approved_total_days');
+    }
+
+    public function approveLeaveCountWithRemainingDays(){
+        $empId = Employee::where('user_id', auth()->user()->id)->first();
+        $totalApprovedDays = Application::select('leave_type', DB::raw('SUM(approved_total_days) as approved_total_days'))
+            ->with('leaveType')
+            ->where('status', 2)
+            ->where('employee_id', $empId->emp_id)
+            ->whereYear('end_date', Carbon::now())
+            ->groupBy('leave_type')
+            ->get();
+        $result = $totalApprovedDays->map(function ($item) {
+            if($item->leave_type==1){
+                $remainingDays = 20 - $item->approved_total_days;
+            }
+            else{
+                $remainingDays='';
+            }
+            return [
+                'leave_type' => $item->leaveType,
+                'approved_total_days' => $item->approved_total_days,
+                'remainingDays' => $remainingDays
+            ];
+        });
+        return response()->json(['totalApprovedDays'=>$result],200);
     }
 
     public function applicationReturn(Request $request, $id)
