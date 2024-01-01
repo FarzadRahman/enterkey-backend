@@ -259,6 +259,14 @@ class ApiApplicationController extends Controller
         $datatables = Datatables::of($appList);
         return $datatables->make(true);
     }
+    public function ToMeApplicationList(){
+//        return Carbon::now();
+        $emp=Employee::where('user_id',auth()->user()->id)->first();
+
+
+        $appList=ApplicationPassingHistory::with(['application'])->where('receiver_id',$emp->emp_id)->get();
+        return $appList;
+    }
     public function applicationApproved(Request $request, $id){
         try {
             $user = auth()->userOrFail();

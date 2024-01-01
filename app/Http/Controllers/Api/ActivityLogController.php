@@ -24,7 +24,7 @@ class ActivityLogController extends Controller
                     'user.employee.department',
                     'user.employee.branch',
                     'user.employee.branch.company'
-                ])->get();
+                ])->latest()->get();
        return response()->json($activityLog);
     }
 }
