@@ -134,7 +134,7 @@ class ApiCompanyController extends Controller
             $companies=$companies->where('comp_id',auth()->user()->company);
         }
 
-        $companies=$companies->paginate(10);
+        $companies=$companies->paginate(50);
 
         return $companies;
     }

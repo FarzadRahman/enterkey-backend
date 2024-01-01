@@ -15,7 +15,7 @@ class ApiReportController extends Controller
     public function data(Request $r)
     {
 //        return $r;
-//
+
       $application=Application::with
       (
           [
@@ -26,7 +26,9 @@ class ApiReportController extends Controller
               'leaveStatus'
           ]
       );
-
+      $application=$application->leftJoin('employee','employee.emp_id','applications.employee_id')
+                                ->leftJoin('users','users.id','employee.user_id')
+                                ->select('applications.*','users.company');
       if($r->leaveType){
           $application=$application->where('leave_type',$r->leaveType);
       }
@@ -39,7 +41,12 @@ class ApiReportController extends Controller
       if($r->leaveStartDate){ $application=$application->where('start_date','>=',$r->leaveStartDate);}
       if($r->leaveEndDate){ $application=$application->where('end_date','<=',$r->leaveEndDate);}
 
-      $application=$application->paginate(10);
+      if(auth()->user()->role_id>1){
+          $application=$application->where('users.company',auth()->user()->company)->paginate(10);
+      }
+      else{
+          $application=$application->paginate(10);
+      }
       return $application;
     }
     public function individualData(Request $r,$id)
