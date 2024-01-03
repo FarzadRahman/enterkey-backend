@@ -68,7 +68,7 @@ class ApiEmployeeController extends Controller
         else{
             $employee->isApprover=0;
         }
-        if(isset($request->isApprover) && $request->isRecorrder){
+        if(isset($request->isRecorrder) && $request->isRecorrder){
             $employee->isRecorder=1;
         }
         else{
@@ -88,6 +88,7 @@ class ApiEmployeeController extends Controller
     }
     public function update(Request $request, $id)
     {
+//        return $request->all();
         $validator = Validator::make($request->all(), [
             'full_name' => 'string|max:255',
             'gender' => 'string|max:10',
@@ -121,13 +122,13 @@ class ApiEmployeeController extends Controller
         $employee->branch_id = $request->branch_id;
         $employee->designation_id = $request->designation_id;
         $employee->department_id = $request->department_id;
-        if(isset($request->isApprover) && $request->isApprover){
+        if($request->isApprover){
             $employee->isApprover=1;
         }
         else{
             $employee->isApprover=0;
         }
-        if(isset($request->isRecorrder) && $request->isRecorrder){
+        if($request->isRecorrder){
             $employee->isRecorder=1;
         }
         else{
