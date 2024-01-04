@@ -168,13 +168,24 @@ class ApiEmployeeController extends Controller
             return response(['message' => 'Login first'], 401);
         }
         $employees = Employee::with(['designation', 'branch', 'department'])
-            ->leftJoin('users','users.id','employee.user_id');
-
+            ->leftJoin('users','users.id','employee.user_id')
+            ->join('branch','branch.bran_id','employee.branch_id')
+            ->join('designation','designation.desg_id','employee.designation_id')
+            ->join('department','department.dept_id','employee.department_id');
 
         if(auth()->user()->role !=1){
             $employees= $employees->where('users.company',auth()->user()->company);
         }
-
+        if($r->searchQuery){
+            $employees=$employees->where('full_name','like','%'.$r->searchQuery.'%')
+                                    ->orWhere('email_address','like','%'.$r->searchQuery.'%')
+                                    ->orWhere('phone_number','like','%'.$r->searchQuery.'%')
+                                    ->orWhere('office_id','like','%'.$r->searchQuery.'%')
+                                    ->orWhere('branch.branch_name','like','%'.$r->searchQuery.'%')
+                                    ->orWhere('designation.desg_nm','like','%'.$r->searchQuery.'%')
+                                    ->orWhere('department.department_name','like','%'.$r->searchQuery.'%')
+                                    ->where('users.company',auth()->user()->company);
+        }
 //
         if($r->isPaginate=="false"){
 
