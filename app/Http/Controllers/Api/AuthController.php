@@ -42,6 +42,9 @@ class AuthController extends Controller
         }
     }
     public function register(Request $request){
+        if(auth()->user()->role_id>1){
+            return response()->json(['message'=>'Access Forbidden'],403);
+        }
 
         $validator=Validator::make($request->all(),[
             'name'=>'required|string',
@@ -128,9 +131,9 @@ class AuthController extends Controller
         $credentials = $request->only('email', 'password');
 
         $user = User::where('email', $request->email)
-            // ->orWhere('phone_number', $request->email)
+             ->orWhere('phone', $request->email)
             ->first();
-            // return response()->json(['message'=>$user->password]);
+//             return response()->json(['message'=>$user->password]);
 
 
 

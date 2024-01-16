@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Branch;
@@ -19,7 +20,7 @@ class ApiBranchController extends Controller
 
         $validator = Validator::make($request->all(), [
             'branch_name' => 'required|string|max:255',
-            'company_id' => 'required|integer',
+//            'company_id' => 'required|integer',
         ]);
 
         if ($validator->fails()) {
@@ -30,7 +31,7 @@ class ApiBranchController extends Controller
 
         $branch = new Branch();
         $branch->branch_name=$request->branch_name;
-        $branch->company_id=$request->company_id;
+        $branch->company_id=auth()->user()->company;
 
         $branch->save();
 
@@ -45,7 +46,7 @@ class ApiBranchController extends Controller
     public function update(Request $request,$id){
         $validator = Validator::make($request->all(), [
             'branch_name' => 'required|string|max:255',
-            'company_id' => 'required|integer',
+//            'company_id' => 'required|integer',
         ]);
 
         if ($validator->fails()) {
@@ -58,7 +59,7 @@ class ApiBranchController extends Controller
             return response()->json(['message' => 'Branch not found'], 404);
         }
         $branch->branch_name=$request->branch_name;
-        $branch->company_id=$request->company_id;
+        $branch->company_id=auth()->user()->company;
 
         $branch->save();
         activity('update')
@@ -91,7 +92,11 @@ class ApiBranchController extends Controller
         if (!$branch) {
             return response()->json(['message' => 'Branch not found'], 404);
         }
+        $employee=Employee::where('branch_id',$id)->count();
+        if($employee>0){
 
+            return response()->json(['message' => 'Branch can not be deleted'], 403);
+        }
         $branch->delete();
         activity('delete')
             ->causedBy(auth()->user()->id)

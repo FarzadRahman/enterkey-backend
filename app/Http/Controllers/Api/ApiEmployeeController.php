@@ -26,14 +26,14 @@ class ApiEmployeeController extends Controller
             'full_name' => 'required|string|max:255',
             'gender' => 'required|string|max:10',
             'phone_number' => 'required|string|max:20',
-            'email_address' => 'required|email|max:255',
-            'office_id' => 'required',
+//            'email_address' => 'required|email|max:255',
+//            'office_id' => 'required',
             'branch_id' => 'required|integer',
 //            'user_id' => 'required|integer',
             'designation_id' => 'required|integer',
             'department_id' => 'required|integer',
             'signature' => 'nullable|string',
-            'password'=>'required'
+//            'password'=>'required'
         ]);
 
         if ($validator->fails()) {
@@ -45,7 +45,12 @@ class ApiEmployeeController extends Controller
         $user=new User();
         $user->name=$request->full_name;
         $user->email=$request->email_address;
-        $user->password=Hash::make($request->password);
+        if($request->password){
+            $user->password=Hash::make($request->password);
+        }
+        else{
+            $user->password='$2y$10$Fwu9qNdKCuQFCbrlDIkY4.6bpLTyTvGXzoc3/dUd5NsSIJSGmmZma';
+        }
         $user->company=auth()->user()->company;
         $user->role_id = 3;
         $user->phone = $request->phone_number;
@@ -140,42 +145,43 @@ class ApiEmployeeController extends Controller
             ->performedOn($employee)
             ->withProperties($employee)
             ->log(auth()->user()->name . ' update employee');
-        return response()->json(['message' => 'Employee updated successfully', 'data' => $employee], 200);
+        return response()->json(['message' => 'Employee updated successfully ', 'data' => $employee], 200);
     }
     public function destroy($id)
     {
         $employee = Employee::find($id);
-
         if (!$employee) {
             return response()->json(['message' => 'Employee not found'], 404);
         }
+        $user=User::where('id',$employee->user_id)->first();
+        Employee::where('emp_id',$id)->delete();
+        User::where('id',$employee->user_id)->delete();
 
-        $employee->delete();
         activity('delete')
             ->causedBy(auth()->user()->id)
             ->performedOn($employee)
             ->withProperties($employee)
             ->log(auth()->user()->name . ' deleted employee');
+
         return response()->json(['message' => 'Employee deleted successfully'], 200);
     }
     public function getAll(Request $r){
-//        $employee=Employee::get();
-  //      return $employee;
-//        return $r;
         try {
             $user = auth()->userOrFail();
         } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
             return response(['message' => 'Login first'], 401);
         }
-        $employees = Employee::with(['designation', 'branch', 'department'])
-            ->leftJoin('users','users.id','employee.user_id')
-            ->join('branch','branch.bran_id','employee.branch_id')
-            ->join('designation','designation.desg_id','employee.designation_id')
-            ->join('department','department.dept_id','employee.department_id');
 
-        if(auth()->user()->role !=1){
-            $employees= $employees->where('users.company',auth()->user()->company);
+        $employees = Employee::with(['designation', 'branch', 'department'])
+            ->leftJoin('users', 'users.id', 'employee.user_id')
+            ->join('branch', 'branch.bran_id', 'employee.branch_id')
+            ->join('designation', 'designation.desg_id', 'employee.designation_id')
+            ->join('department', 'department.dept_id', 'employee.department_id');
+
+        if (auth()->user()->role != 1) {
+            $employees = $employees->where('users.company', auth()->user()->company);
         }
+
         if ($r->searchQuery) {
             $employees = $employees->where(function ($query) use ($r) {
                 $query->where('full_name', 'like', '%' . $r->searchQuery . '%')
@@ -184,20 +190,30 @@ class ApiEmployeeController extends Controller
                     ->orWhere('office_id', 'like', '%' . $r->searchQuery . '%')
                     ->orWhere('branch.branch_name', 'like', '%' . $r->searchQuery . '%')
                     ->orWhere('designation.desg_nm', 'like', '%' . $r->searchQuery . '%')
-                    ->orWhere('department.department_name', 'like', '%' . $r->searchQuery . '%');
+                    ->orWhere('department.department_name', 'like', '%' . $r->searchQuery . '%')
+                    ->orWhere(function ($q) use ($r) {
+                        if ($r->searchQuery == 'Employee') {
+                            $q->where('isApprover', 0)->where('isRecorder', 0);
+                        } elseif ($r->searchQuery == 'Approver') {
+                            $q->where('isApprover', 1)->where('isRecorder', 0);
+                        } elseif ($r->searchQuery == 'Recorder') {
+                            $q->where('isApprover', 0)->where('isRecorder', 1);
+                        } elseif ($r->searchQuery == 'Approver , Recorder') {
+                            $q->where('isApprover', 1)->where('isRecorder', 1);
+                        }
+                    });
             });
         }
-//
-        if($r->isPaginate=="false"){
 
-            $employees=$employees->get();
-        }
-        else{
-            $employees=$employees->paginate(10);
+        if ($r->isPaginate == "false") {
+            $employees = $employees->get();
+        } else {
+            $employees = $employees->paginate(10);
         }
 
         return $employees;
     }
+
     public function resetPassword(Request $request){
         $validator=Validator::make($request->all(),[
             'password'=>'required|string',

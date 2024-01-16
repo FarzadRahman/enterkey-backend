@@ -14,7 +14,7 @@ class ApiReportController extends Controller
     }
     public function data(Request $r)
     {
-//        return $r;
+//       return $r->all();
 
       $application=Application::with
       (
@@ -40,6 +40,9 @@ class ApiReportController extends Controller
       }
       if($r->leaveStartDate){ $application=$application->where('start_date','>=',$r->leaveStartDate);}
       if($r->leaveEndDate){ $application=$application->where('end_date','<=',$r->leaveEndDate);}
+      if ($r->appliedDate) {
+            $application = $application->whereDate('applications.created_at', $r->appliedDate);
+      }
 
       if(auth()->user()->role_id>1){
           $application=$application->where('users.company',auth()->user()->company)->paginate(10);

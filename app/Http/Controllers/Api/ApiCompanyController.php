@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Company;
@@ -107,9 +108,13 @@ class ApiCompanyController extends Controller
         $branches = Branch::where('company_id', $id)->get();
 
         if ($branches->count() > 0) {
-            return response()->json(['message' => 'Company cannot be deleted because it has associated branches'], 200);
+            return response()->json(['message' => 'Company cannot be deleted because it has associated branches'], 403);
         }
+        $user=User::where('company',$id)->count();
+        if($user>0){
+            return response()->json(['message' => 'Company cannot be deleted'], 403);
 
+        }
         $company->delete();
         activity('delete')
             ->causedBy(auth()->user()->id)

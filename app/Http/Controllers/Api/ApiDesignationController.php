@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Designation;
+use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -68,6 +69,10 @@ class ApiDesignationController extends Controller
         $designation=Designation::find($id);
         if (!$designation){
             return response()->json(['message'=>'Designation not found'],404);
+        }
+        $employee=Employee::where('designation_id',$id)->count();
+        if($employee>0){
+            return response()->json(['message'=>'Designation can not be deleted'],403);
         }
         $designation->delete();
         activity('deleted')

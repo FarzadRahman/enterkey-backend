@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Application;
 use App\Models\ApplicationPassingHistory;
 use App\Models\Employee;
+use App\Models\Message;
 use App\Models\User;
 use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
@@ -25,6 +26,20 @@ class ApiApplicationController extends Controller
         } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
             return response(['message' => 'Login first'], 401);
         }
+        $validator = Validator::make($request->all(), [
+            'approval_id' => 'required', // Add appropriate rules for this field
+            'reason' => 'required|string', // Add appropriate rules for this field
+            'leave_type_id' => 'required', // Add appropriate rules for this field
+            'start' => 'required|date', // Add appropriate rules for this field
+            'end' => 'required|date|after_or_equal:start', // Add appropriate rules for this field, ensuring 'end' is after or equal to 'start'
+            'stay_location' => 'required|string', // Add appropriate rules for this field
+            'reviewer_id' => 'required', // Add appropriate rules for this field
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 400);
+        }
+
         $Sdate = Carbon::parse($request->start)->startOfDay();
         $edate = Carbon::parse($request->end)->endOfDay();
         $days = $Sdate->diffInDays($edate);
@@ -67,6 +82,25 @@ class ApiApplicationController extends Controller
 
             $application->save();
 
+            $message=new Message();
+            $message->sender_id=$application->employee_id;
+            $message->receiver_id=$application->reviewer_id;
+            $message->application_id=$application->id;
+            $message->message=auth()->user()->name .' '.'('.auth()->user()->employee->designation->desg_nm.')'.' applied an application';
+            $message->url="/leave/details/".$application->id;
+            $message->created_at=Carbon::now();
+            $message->save();
+
+            $message=new Message();
+            $message->sender_id=$application->employee_id;
+            $message->receiver_id=$application->employee_id;
+            $message->application_id=$application->id;
+            $message->message=auth()->user()->name .' '.'('.auth()->user()->employee->designation->desg_nm.')'.' applied an application';
+            $message->url="/leave/details/".$application->id;
+            $message->created_at=Carbon::now();
+            $message->save();
+
+
             $history=new ApplicationPassingHistory();
             $history->application_id=$application->id;
             $history->sender_id= $application->employee_id;
@@ -94,6 +128,7 @@ class ApiApplicationController extends Controller
             return response(['message' => 'Login first'], 401);
         }
         $employeeList= Employee::leftjoin('users','users.id','employee.user_id')
+            ->leftjoin('designation','employee.designation_id','designation.desg_id')
             ->where('user_id','!=',auth()->user()->id)
             ->where('users.company','=',auth()->user()->company)
             ->where('employee.isApprover',1)
@@ -109,6 +144,7 @@ class ApiApplicationController extends Controller
             return response(['message' => 'Login first'], 401);
         }
         $employeeList= Employee::leftjoin('users','users.id','employee.user_id')
+            ->leftjoin('designation','employee.designation_id','designation.desg_id')
             ->where('user_id','!=',auth()->user()->id)
             ->where('users.company','=',auth()->user()->company)
             ->where('employee.isRecorder',1)
@@ -140,32 +176,100 @@ class ApiApplicationController extends Controller
     public function appliedList(Request $r){
 //        return auth()->user()->id;
         $emp=Employee::where('user_id',auth()->user()->id)->first();
-        $appList=Application::select('applications.*','approver.full_name','recorder.full_name as recorder_name','leave_status.leave_status_name')
+//        $appList=Application::select('applications.*','approver.full_name','recorder.full_name as recorder_name','leave_status.leave_status_name')
+//            ->where('employee_id',$emp->emp_id)
+//            ->leftJoin('employee as approver','approver.emp_id','applications.approval_id')
+//            ->leftJoin('employee as recorder','recorder.emp_id','applications.reviewer_id')
+//            ->leftJoin('leave_status','leave_status.l_stat_id','applications.status')
+//            ->get();
+//
+//        $datatables = Datatables::of($appList);
+//        return $datatables->make(true);
+        $application=Application::with
+        (
+            [
+                'sender','sender.user','sender.designation',
+                'approver','approver.user','approver.designation',
+                'reviewer','reviewer.user',
+                'leaveType',
+                'leaveStatus'
+            ]
+        );
+        $application=$application->leftJoin('employee','employee.emp_id','applications.employee_id')
+            ->leftJoin('users','users.id','employee.user_id')
             ->where('employee_id',$emp->emp_id)
-            ->leftJoin('employee as approver','approver.emp_id','applications.approval_id')
-            ->leftJoin('employee as recorder','recorder.emp_id','applications.reviewer_id')
-            ->leftJoin('leave_status','leave_status.l_stat_id','applications.status')
-            ->get();
+            ->select('applications.*','users.company');
+        if($r->leaveType){
+            $application=$application->where('leave_type',$r->leaveType);
+        }
+        if($r->selectedEmp){
+            $application=$application->where('employee_id',$r->selectedEmp);
+        }
+        if($r->leaveStatus){
+            $application=$application->where('status',$r->leaveStatus);
+        }
+        if($r->leaveStartDate){ $application=$application->where('start_date','>=',$r->leaveStartDate);}
+        if($r->leaveEndDate){ $application=$application->where('end_date','<=',$r->leaveEndDate);}
 
-        $datatables = Datatables::of($appList);
-        return $datatables->make(true);
+        if(auth()->user()->role_id>1){
+            $application=$application->where('users.company',auth()->user()->company)->paginate(10);
+        }
+        else{
+            $application=$application->paginate(10);
+        };
+        return $application;
 
     }
 
-    public function getApplicationForRecorder(){
+    public function getApplicationForRecorder(Request $r){
         $emp=Employee::where('user_id',auth()->user()->id)->first();
 
-        $appList=Application::select('applications.*','approver.full_name','sender.full_name as sender_name')
+//        $appList=Application::select('applications.*','approver.full_name','sender.full_name as sender_name')
+//            ->where('reviewer_id',$emp->emp_id)
+//            ->leftJoin('employee as approver','approver.emp_id','applications.approval_id')
+//            ->leftJoin('employee as sender','sender.emp_id','applications.employee_id')
+//            ->leftJoin('application_passing_history','application_passing_history.application_id','applications.id')
+//            ->where('application_passing_history.receiver_id',$emp->emp_id)
+//            ->where('application_passing_history.status',1)
+//            ->get();
+//
+//        $datatables = Datatables::of($appList);
+//        return $datatables->make(true);
+
+
+        $application=Application::
+            with([
+            'sender','sender.user','sender.designation',
+            'approver','approver.user','approver.designation',
+            'reviewer','reviewer.user',
+            'leaveType',
+            'leaveStatus'
+        ])
+        ->select('applications.*')
             ->where('reviewer_id',$emp->emp_id)
             ->leftJoin('employee as approver','approver.emp_id','applications.approval_id')
             ->leftJoin('employee as sender','sender.emp_id','applications.employee_id')
             ->leftJoin('application_passing_history','application_passing_history.application_id','applications.id')
             ->where('application_passing_history.receiver_id',$emp->emp_id)
-            ->where('application_passing_history.status',1)
-            ->get();
+            ->where('application_passing_history.status',1);
 
-        $datatables = Datatables::of($appList);
-        return $datatables->make(true);
+        if($r->leaveType){
+            $application=$application->where('leave_type',$r->leaveType);
+        }
+        if($r->selectedEmp){
+            $application=$application->where('employee_id',$r->selectedEmp);
+        }
+        if($r->leaveStatus){
+            $application=$application->where('status',$r->leaveStatus);
+        }
+        if($r->leaveStartDate){ $application=$application->where('start_date','>=',$r->leaveStartDate);}
+        if($r->leaveEndDate){ $application=$application->where('end_date','<=',$r->leaveEndDate);}
+
+
+        $application=$application->paginate(10);
+
+        return $application;
+
     }
 
     public function getApplicationDetails($id){
@@ -210,7 +314,8 @@ class ApiApplicationController extends Controller
                         'reviewer.branch.company',
                         'reviewer.designation',
                         'reviewer.designation.grade',
-                        'leaveType'
+                        'leaveType',
+                        'leaveStatus'
                     ])
                 ->where('id', $id)
                 ->first();
@@ -241,31 +346,115 @@ class ApiApplicationController extends Controller
 
     }
 
-    public function getApplicationForApprover(){
+    public function getApplicationForApprover(Request $r){
         $emp=Employee::where('user_id',auth()->user()->id)->first();
 
 
-        $appList=Application::select('applications.*','sender.full_name','recorder.full_name as recorder_name')
+//        $appList=Application::select('applications.*','sender.full_name','recorder.full_name as recorder_name')
+//            ->where('approval_id',$emp->emp_id)
+//            ->leftJoin('employee as sender','sender.emp_id','applications.employee_id')
+//            ->leftJoin('employee as recorder','recorder.emp_id','applications.reviewer_id')
+//            ->leftJoin('application_passing_history','application_passing_history.application_id','applications.id')
+//            ->where('application_passing_history.receiver_id',$emp->emp_id)
+//            ->where('application_passing_history.status',1)
+//            ->get();
+
+
+
+//        $datatables = Datatables::of($appList);
+//        return $datatables->make(true);
+        $application=Application::
+        with([
+            'sender','sender.user','sender.designation',
+            'approver','approver.user','approver.designation',
+            'reviewer','reviewer.user',
+            'leaveType',
+            'leaveStatus'
+        ])
+            ->select('applications.*')
             ->where('approval_id',$emp->emp_id)
             ->leftJoin('employee as sender','sender.emp_id','applications.employee_id')
             ->leftJoin('employee as recorder','recorder.emp_id','applications.reviewer_id')
             ->leftJoin('application_passing_history','application_passing_history.application_id','applications.id')
             ->where('application_passing_history.receiver_id',$emp->emp_id)
-            ->where('application_passing_history.status',1)
-            ->get();
+            ->where('application_passing_history.status',1);
+        if($r->leaveType){
+            $application=$application->where('leave_type',$r->leaveType);
+        }
+        if($r->selectedEmp){
+            $application=$application->where('employee_id',$r->selectedEmp);
+        }
+        if($r->leaveStatus){
+            $application=$application->where('status',$r->leaveStatus);
+        }
+        if($r->leaveStartDate){ $application=$application->where('start_date','>=',$r->leaveStartDate);}
+        if($r->leaveEndDate){ $application=$application->where('end_date','<=',$r->leaveEndDate);}
 
 
+        $application=$application->paginate(10);
 
-        $datatables = Datatables::of($appList);
-        return $datatables->make(true);
+        return $application;
+
     }
-    public function ToMeApplicationList(){
+    public function ToMeApplicationList(Request $r){
 //        return Carbon::now();
         $emp=Employee::where('user_id',auth()->user()->id)->first();
 
 
-        $appList=ApplicationPassingHistory::with(['application'])->where('receiver_id',$emp->emp_id)->get();
-        return $appList;
+//        $appList=ApplicationPassingHistory::
+//            select('applications.*','application_passing_history.*')
+//            ->leftJoin('applications','applications.id','application_passing_history.application_id')
+//            ->with(['application'])
+//
+//            ->where('receiver_id',$emp->emp_id)
+//            ->get();
+        $application = Application::
+        join('application_passing_history', 'application_passing_history.application_id', 'applications.id')
+            ->with([
+                'approver',
+                'approver.user',
+                'approver.department',
+                'approver.branch',
+                'approver.branch.company',
+                'approver.designation',
+                'approver.designation.grade',
+                'sender',
+                'sender.user',
+                'sender.department',
+                'sender.branch',
+                'sender.branch.company',
+                'sender.designation',
+                'sender.designation.grade',
+                'reviewer',
+                'reviewer.user',
+                'reviewer.department',
+                'reviewer.branch',
+                'reviewer.branch.company',
+                'reviewer.designation',
+                'reviewer.designation.grade',
+                'leaveType','leaveStatus'
+            ])
+            ->select('applications.*')
+            ->whereNot('applications.employee_id',$emp->emp_id)
+            ->where('application_passing_history.receiver_id', $emp->emp_id)
+            ->distinct();
+            if($r->leaveType){
+                $application=$application->where('leave_type',$r->leaveType);
+            }
+            if($r->selectedEmp){
+                $application=$application->where('employee_id',$r->selectedEmp);
+            }
+            if($r->leaveStatus){
+                $application=$application->where('status',$r->leaveStatus);
+            }
+            if($r->leaveStartDate){ $application=$application->where('start_date','>=',$r->leaveStartDate);}
+            if($r->leaveEndDate){ $application=$application->where('end_date','<=',$r->leaveEndDate);}
+
+
+            $application=$application->paginate(10);
+
+        return $application;
+
     }
     public function applicationApproved(Request $request, $id){
         try {
@@ -307,6 +496,15 @@ class ApiApplicationController extends Controller
         // Update application status and save changes
         $application->status = 2;
         $application->save();
+
+        $message=new Message();
+        $message->sender_id=$emp->emp_id;
+        $message->receiver_id=$application->employee_id;
+        $message->application_id=$application->id;
+        $message->message=auth()->user()->name .' '.'('.auth()->user()->employee->designation->desg_nm.')'.' approved your application';
+        $message->url="/leave/details/".$application->id;
+        $message->created_at=Carbon::now();
+        $message->save();
 
         // Update ApplicationPassingHistory
         ApplicationPassingHistory::where('application_id', $id)->update(['status' => 2]);
@@ -385,6 +583,15 @@ class ApiApplicationController extends Controller
             $application->status=2;
             $application->save();
 
+            $message=new Message();
+            $message->sender_id=$empId->emp_id;
+            $message->receiver_id=$application->employee_id;
+            $message->application_id=$application->id;
+            $message->message=auth()->user()->name .' '.'('.auth()->user()->employee->designation->desg_nm.')'.'approved your application';
+            $message->url="/leave/details/".$application->id;
+            $message->created_at=Carbon::now();
+            $message->save();
+
             activity('pass')
                 ->causedBy(auth()->user()->id)
                 ->performedOn($application)
@@ -409,6 +616,16 @@ class ApiApplicationController extends Controller
                 $application->review_total_days=$request->approved_total_days;
                 $application->save();
             }
+
+            $message=new Message();
+            $message->sender_id=$empId->emp_id;
+            $message->receiver_id=$application->approval_id;
+            $message->application_id=$application->id;
+            $message->message=auth()->user()->name .' '.'('.auth()->user()->employee->designation->desg_nm.')'.' applied an application';
+            $message->url="/leave/details/".$application->id;
+            $message->created_at=Carbon::now();
+            $message->save();
+
             activity('pass')
                 ->causedBy(auth()->user()->id)
                 ->performedOn($appPassHistory)
@@ -479,6 +696,15 @@ class ApiApplicationController extends Controller
             $application->status=3;
             $application->save();
 
+        $message=new Message();
+        $message->sender_id=$empId->emp_id;
+        $message->receiver_id=$application->employee_id;
+        $message->application_id=$application->id;
+        $message->message=auth()->user()->name .' '.'('.auth()->user()->employee->designation->desg_nm.')'.' returned your application';
+        $message->url="/leave/details/".$application->id;
+        $message->created_at=Carbon::now();
+        $message->save();
+
 
 
         activity('return')
@@ -521,6 +747,15 @@ class ApiApplicationController extends Controller
         $application->status=4;
         $application->save();
 
+        $message=new Message();
+        $message->sender_id=$empId->emp_id;
+        $message->receiver_id=$application->employee_id;
+        $message->application_id=$application->id;
+        $message->message=auth()->user()->name .' '.'('.auth()->user()->employee->designation->desg_nm.')'.' rejected your application';
+        $message->url="/leave/details/".$application->id;
+        $message->created_at=Carbon::now();
+        $message->save();
+
 
         activity('cancel')
             ->causedBy(auth()->user()->id)
@@ -539,7 +774,6 @@ class ApiApplicationController extends Controller
         $application = Application::where('id', $id)
             ->where('employee_id', $empId->emp_id)
             ->first();
-
         if (!$application){
             return response()->json(['message' => 'Application not found'], 404);
         }
@@ -613,6 +847,26 @@ class ApiApplicationController extends Controller
                 $appPassHistory->comments = $request->comments;
             }
             $appPassHistory->save();
+
+            $message=new Message();
+            $message->sender_id=$application->employee_id;
+            $message->receiver_id=$application->reviewer_id;
+            $message->application_id=$application->id;
+            $message->message=auth()->user()->name .' '.'('.auth()->user()->employee->designation->desg_nm.')'.' modified the application';
+            $message->url="/leave/details/".$application->id;
+            $message->created_at=Carbon::now();
+            $message->save();
+
+            $message=new Message();
+            $message->sender_id=$application->employee_id;
+            $message->receiver_id=$application->employee_id;
+            $message->application_id=$application->id;
+            $message->message=auth()->user()->name .' '.'('.auth()->user()->employee->designation->desg_nm.')'.' modified the application';
+            $message->url="/leave/details/".$application->id;
+            $message->created_at=Carbon::now();
+            $message->save();
+
+
             activity('update')
                 ->causedBy(auth()->user()->id)
                 ->performedOn($application)

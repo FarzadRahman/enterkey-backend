@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Department;
+use App\Models\Employee;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -65,7 +66,10 @@ class ApiDepartmentController extends Controller
         if (!$department) {
             return response()->json(['message' => 'Department not found'], 404);
         }
-
+        $employee=Employee::where('department_id',$id)->count();
+        if($employee>0){
+            return response()->json(['message'=>'Department can not be deleted'],403);
+        }
         $department->delete();
         activity('delete')
             ->causedBy(auth()->user()->id)

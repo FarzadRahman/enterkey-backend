@@ -13,6 +13,7 @@ use App\Http\Controllers\Api\ApiLeaveTypeController;
 use App\Http\Controllers\Api\ApiReportController;
 use App\Http\Controllers\Api\ApiRoleController;
 use App\Http\Controllers\Api\ApiUserController;
+use App\Http\Controllers\Api\ApiMessageController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\AuthController;
@@ -118,7 +119,7 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::get('/leave/application-history/{id}',[ApiApplicationController::class,'applicationHistory']);
     Route::get('/leave/approve-count',[ApiApplicationController::class,'approveLeaveCount']);
     Route::get('/leave/approve-leave-count',[ApiApplicationController::class,'approveLeaveCountWithRemainingDays']);
-    Route::get('/leave/application-to-me',[ApiApplicationController::class,'ToMeApplicationList']);
+    Route::post('/leave/application-to-me',[ApiApplicationController::class,'ToMeApplicationList']);
 
     /*<-----------------------------------Activity Log ------------------------------------------>*/
     Route::get('/activity-log',[ActivityLogController::class,'getAll']);
@@ -126,4 +127,6 @@ Route::group(['middleware'=>'api'],function($routes){
     /*<-----------------------------------Report ------------------------------------------>*/
     Route::post('/leave/advance-report', [ApiReportController::class, 'data']);
     Route::post('/leave/individual-report/{id}',[ApiReportController::class,'individualData']);
+    /*<-----------------------------------Report ------------------------------------------>*/
+    Route::get('/leave/messages',[ApiMessageController::class,'getMessages']);
 });

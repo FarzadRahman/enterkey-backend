@@ -14,6 +14,9 @@ class ApiUserController extends Controller
     }
     public function getAll()
     {
+        if(auth()->user()->role_id>1){
+            return  response()->json(['message'=>'Access Forbidden'],403);
+        }
         $user= User::leftJoin('company', 'users.company', '=', 'company.comp_id')
             ->leftJoin('roles','roles.role_id','users.role_id')
             ->select('users.*', 'company.*','roles.role_name')

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Models\Designation;
 use App\Models\Grade;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
@@ -65,6 +66,10 @@ class ApiGradeController extends Controller
         $grade=Grade::find($id);
         if(!$grade){
             return response()->json(['message'=>'Grade is not found'],404);
+        }
+        $designation=Designation::where('grade_id',$id)->count();
+        if($designation>0){
+            return response()->json(['message'=>'Designation can not be deleted'],403);
         }
         $grade->delete();
         activity('delete')
