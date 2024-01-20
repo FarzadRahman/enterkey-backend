@@ -66,7 +66,7 @@ class ApiLeaveStatusController extends Controller
             return response()->json(['message'=>'Leave Status is not found'],404);
         }
         $leaveStatus->delete();
-        activity('delete')
+        activity('destroy')
             ->causedBy(auth()->user()->id)
             ->performedOn($leaveStatus)
             ->withProperties($leaveStatus)

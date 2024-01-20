@@ -66,7 +66,7 @@ class ApiLeaveTypeController extends Controller
             return response()->json(['message'=>'Leave type not found'],404);
         }
         $leaveType->delete();
-        activity('delete')
+        activity('destroy')
             ->causedBy(auth()->user()->id)
             ->performedOn($leaveType)
             ->withProperties($leaveType)

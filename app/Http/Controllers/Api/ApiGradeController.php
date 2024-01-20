@@ -72,7 +72,7 @@ class ApiGradeController extends Controller
             return response()->json(['message'=>'Designation can not be deleted'],403);
         }
         $grade->delete();
-        activity('delete')
+        activity('destroy')
             ->causedBy(auth()->user()->id)
             ->performedOn($grade)
             ->withProperties($grade)

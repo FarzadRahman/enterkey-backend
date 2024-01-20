@@ -157,7 +157,7 @@ class ApiEmployeeController extends Controller
         Employee::where('emp_id',$id)->delete();
         User::where('id',$employee->user_id)->delete();
 
-        activity('delete')
+        activity('destroy')
             ->causedBy(auth()->user()->id)
             ->performedOn($employee)
             ->withProperties($employee)

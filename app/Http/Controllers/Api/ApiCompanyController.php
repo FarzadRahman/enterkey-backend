@@ -116,7 +116,7 @@ class ApiCompanyController extends Controller
 
         }
         $company->delete();
-        activity('delete')
+        activity('destroy')
             ->causedBy(auth()->user()->id)
             ->performedOn($company)
             ->withProperties($company)

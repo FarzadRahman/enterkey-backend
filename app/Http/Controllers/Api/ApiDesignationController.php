@@ -75,7 +75,7 @@ class ApiDesignationController extends Controller
             return response()->json(['message'=>'Designation can not be deleted'],403);
         }
         $designation->delete();
-        activity('deleted')
+        activity('destroy')
             ->causedBy(auth()->user()->id)
             ->performedOn($designation)
             ->withProperties($designation)

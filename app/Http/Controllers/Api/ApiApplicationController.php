@@ -27,13 +27,13 @@ class ApiApplicationController extends Controller
             return response(['message' => 'Login first'], 401);
         }
         $validator = Validator::make($request->all(), [
-            'approval_id' => 'required', // Add appropriate rules for this field
-            'reason' => 'required|string', // Add appropriate rules for this field
+//            'approval_id' => 'required', // Add appropriate rules for this field
+//            'reason' => 'required|string', // Add appropriate rules for this field
             'leave_type_id' => 'required', // Add appropriate rules for this field
             'start' => 'required|date', // Add appropriate rules for this field
             'end' => 'required|date|after_or_equal:start', // Add appropriate rules for this field, ensuring 'end' is after or equal to 'start'
             'stay_location' => 'required|string', // Add appropriate rules for this field
-            'reviewer_id' => 'required', // Add appropriate rules for this field
+//            'reviewer_id' => 'required', // Add appropriate rules for this field
         ]);
 
         if ($validator->fails()) {
@@ -69,7 +69,9 @@ class ApiApplicationController extends Controller
                 $endDate = $request->start;
             }
             $application = new Application();
-            $application->approval_id=$request->approval_id;
+            if($request->approval_id){
+                $application->approval_id=$request->approval_id;
+            }
             $application->reviewer_id=$request->reviewer_id;
             $application->employee_id=$emp->emp_id;
             $application->start_date=$request->start;
@@ -120,6 +122,33 @@ class ApiApplicationController extends Controller
         }
             //return response()->json(['message'=>'another leave'],201);
 
+    }
+    public function setApprover(Request $request,$id){
+//        return $request->all();
+        try {
+            $user = auth()->userOrFail();
+        } catch (\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e) {
+            return response(['message' => 'Login first'], 401);
+        }
+        $employee=Employee::where('user_id',auth()->user()->id)->first();
+        $application=Application::where('id',$id)->first();
+        if(!$application){
+            return response()->json(['message'=>'Application not found'],404);
+        }
+        //approval_id
+        //approval_id
+        $application->approval_id=$request->approval_id;
+        $application->save();
+
+        activity('update')
+            ->causedBy(auth()->user()->id)
+            ->performedOn($application)
+            ->withProperties($application)
+            ->log(auth()->user()->name . ' selected approver');
+        return response()->json([
+            'message'=>'Approver is selected',
+            'data'=>$application
+        ],200);
     }
     public function getLeaveEmployee(){
         try {
@@ -614,8 +643,9 @@ class ApiApplicationController extends Controller
                 $application->reviewer_start_date=$request->start;
                 $application->reviewer_end_date = $request->end;
                 $application->review_total_days=$request->approved_total_days;
-                $application->save();
             }
+            $application->status=5;
+            $application->save();
 
             $message=new Message();
             $message->sender_id=$empId->emp_id;

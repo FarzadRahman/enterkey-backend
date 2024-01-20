@@ -98,7 +98,7 @@ class ApiBranchController extends Controller
             return response()->json(['message' => 'Branch can not be deleted'], 403);
         }
         $branch->delete();
-        activity('delete')
+        activity('destroy')
             ->causedBy(auth()->user()->id)
             ->performedOn($branch)
             ->withProperties($branch)

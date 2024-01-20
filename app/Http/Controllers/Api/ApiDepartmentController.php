@@ -71,7 +71,7 @@ class ApiDepartmentController extends Controller
             return response()->json(['message'=>'Department can not be deleted'],403);
         }
         $department->delete();
-        activity('delete')
+        activity('destroy')
             ->causedBy(auth()->user()->id)
             ->performedOn($department)
             ->withProperties($department)

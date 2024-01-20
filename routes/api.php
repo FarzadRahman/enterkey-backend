@@ -103,6 +103,7 @@ Route::group(['middleware'=>'api'],function($routes){
     Route::post('/role/delete/{id}',[ApiRoleController::class,'destroy']);
     Route::get('/role',[ApiRoleController::class,'getAll']);
     Route::post('/leave/create',[ApiApplicationController::class,'store']);
+    Route::post('/leave/select-approver/{id}',[ApiApplicationController::class,'setApprover']);
     Route::get('/leave/employee-list',[ApiApplicationController::class,'getLeaveEmployee']);
     Route::get('/leave/recorder-list',[ApiApplicationController::class,'getRecorderEmployee']);
     Route::get('/leave/application-list',[ApiApplicationController::class,'getApplicationList']);
