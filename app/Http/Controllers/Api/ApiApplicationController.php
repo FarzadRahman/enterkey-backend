@@ -16,6 +16,10 @@ use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 class ApiApplicationController extends Controller
 {
+    const acceptedPdfTypes =  [
+        "application/pdf"
+    ];
+
     public function __construct()
     {
         $this->middleware(['api']);
@@ -81,6 +85,32 @@ class ApiApplicationController extends Controller
             $application->stay_location=$request->stay_location;
             $application->leave_type=$request->leave_type_id;
             $application->status=1;
+            if($request->files){
+                $requestFile = $request->input('files'); // Replace 'base64_data' with the actual field name in your form
+
+                // Extract MIME type from the base64 string
+                preg_match('#^data:(.*?);base64,#i', $requestFile, $matches);
+                $mimeType = $matches[1] ?? null;
+
+                // Check if the MIME type is in the accepted types
+                if (!in_array($mimeType, self::acceptedPdfTypes)) {
+                    return response()->json(['error' => 'Invalid PDF file format.']);
+                }
+
+                // Remove the data URI scheme and header from the base64 string
+                $base64Data = preg_replace('#^data:' . preg_quote($mimeType) . ';base64,#i', '', $requestFile);
+
+                // Decode the base64 data
+                $decodedData = base64_decode($base64Data);
+
+                // Specify the file name
+                $fileName =  time().'-'.$request->fileName; // You can customize the file name if needed
+                $application->files=$fileName;
+                // Save the decoded data as a PDF file, overwriting the existing file if it exists
+                file_put_contents(public_path().'/uploads/'.$fileName, $decodedData);
+
+            }
+
 
             $application->save();
 
@@ -933,6 +963,20 @@ class ApiApplicationController extends Controller
                 ->where('application_id',$id)
                 ->get();
         return $appHistory;
+    }
+    public function downloadAttachment($id){
+        $application=Application::where('id',$id)->first();
+        if(!$application){
+            return response()->json(['message'=>'Application not found'],404);
+        }
+        if(!($application->files)){
+            return response()->json(['message'=>'File not attach']);
+        }
+        else{
+            $filePath = public_path('uploads/' . $application->files);
+            return response()->download($filePath, $application->files, ['Content-Type' => 'application/pdf']);
+        }
+//        return $application;
     }
 
 }

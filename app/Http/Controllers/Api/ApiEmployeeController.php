@@ -221,7 +221,8 @@ class ApiEmployeeController extends Controller
         if($validator->fails()){
             return response()->json($validator->errors(),400);
         }
-        $user=User::find($request->email);
+        $user=User::where('email',$request->email)->first();
+//        return $user."not found";
         if (!$user){
             return response()->json(['message'=>'No user found'],404);
         }

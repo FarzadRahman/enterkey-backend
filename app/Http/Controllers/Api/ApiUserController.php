@@ -14,6 +14,7 @@ class ApiUserController extends Controller
     }
     public function getAll()
     {
+//        return auth()->user()->role_id;
         if(auth()->user()->role_id>1){
             return  response()->json(['message'=>'Access Forbidden'],403);
         }
