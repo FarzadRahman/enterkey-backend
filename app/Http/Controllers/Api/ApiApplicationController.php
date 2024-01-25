@@ -94,20 +94,23 @@ class ApiApplicationController extends Controller
 
                 // Check if the MIME type is in the accepted types
                 if (!in_array($mimeType, self::acceptedPdfTypes)) {
-                    return response()->json(['error' => 'Invalid PDF file format.']);
+                    $application->files=null;
+                }
+                else{
+                    // Remove the data URI scheme and header from the base64 string
+                    $base64Data = preg_replace('#^data:' . preg_quote($mimeType) . ';base64,#i', '', $requestFile);
+
+                    // Decode the base64 data
+                    $decodedData = base64_decode($base64Data);
+
+                    // Specify the file name
+                    $fileName =  time().'-'.$request->fileName; // You can customize the file name if needed
+                    $application->files=$fileName;
+                    // Save the decoded data as a PDF file, overwriting the existing file if it exists
+                    file_put_contents(public_path().'/uploads/'.$fileName, $decodedData);
+
                 }
 
-                // Remove the data URI scheme and header from the base64 string
-                $base64Data = preg_replace('#^data:' . preg_quote($mimeType) . ';base64,#i', '', $requestFile);
-
-                // Decode the base64 data
-                $decodedData = base64_decode($base64Data);
-
-                // Specify the file name
-                $fileName =  time().'-'.$request->fileName; // You can customize the file name if needed
-                $application->files=$fileName;
-                // Save the decoded data as a PDF file, overwriting the existing file if it exists
-                file_put_contents(public_path().'/uploads/'.$fileName, $decodedData);
 
             }
 
@@ -892,6 +895,35 @@ class ApiApplicationController extends Controller
             return response()->json(['message'=>'Leave duration cannot exceed 20 days','status'=>1],201);
         }
         else{
+            if($request->files){
+                $requestFile = $request->input('files'); // Replace 'base64_data' with the actual field name in your form
+
+                // Extract MIME type from the base64 string
+                preg_match('#^data:(.*?);base64,#i', $requestFile, $matches);
+                $mimeType = $matches[1] ?? null;
+
+                // Check if the MIME type is in the accepted types
+                if (!in_array($mimeType, self::acceptedPdfTypes)) {
+                    $application->files=null;
+                }
+                else{
+                    // Remove the data URI scheme and header from the base64 string
+                    $base64Data = preg_replace('#^data:' . preg_quote($mimeType) . ';base64,#i', '', $requestFile);
+
+                    // Decode the base64 data
+                    $decodedData = base64_decode($base64Data);
+
+                    // Specify the file name
+                    $fileName =  time().'-'.$request->fileName; // You can customize the file name if needed
+                    $application->files=$fileName;
+                    // Save the decoded data as a PDF file, overwriting the existing file if it exists
+                    file_put_contents(public_path().'/uploads/'.$fileName, $decodedData);
+
+                }
+
+
+            }
+
             $application->status = 1;
 
             $application->save();
